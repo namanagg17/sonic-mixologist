@@ -1,36 +1,15 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
-console.log("SPOTIFY_CLIENT_ID:", process.env.SPOTIFY_CLIENT_ID);
-console.log("SPOTIFY_REDIRECT_URI:", process.env.SPOTIFY_REDIRECT_URI);
+// Backend is now optional - Sonic Mixologist runs entirely client-side
+// This server is kept for potential future API extensions
 
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-
-import songRoutes from './routes/songs.js';
-import recommendRoutes from './routes/recommend.js';
-import { errorHandler } from './middleware/errorHandler.js';
-
-console.log("CLIENT ID:", process.env.SPOTIFY_CLIENT_ID);
-console.log("SECRET EXISTS:", !!process.env.SPOTIFY_CLIENT_SECRET);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
 // Security middleware
 app.use(helmet());
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-app.use('/api/', limiter);
 
 // CORS configuration
 app.use(cors({
@@ -49,13 +28,10 @@ app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'OK',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    message: 'Sonic Mixologist - Audio-only architecture'
   });
 });
-
-// API routes
-app.use('/api/song', songRoutes);
-app.use('/api/recommend', recommendRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -65,11 +41,17 @@ app.use('*', (req, res) => {
   });
 });
 
-// Error handling middleware (must be last)
-app.use(errorHandler);
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: 'Something went wrong'
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 Sonic Mixologist server running on port ${PORT}`);
   console.log(`📡 Health check available at http://localhost:${PORT}/health`);
-  console.log(`🔗 API base URL: http://localhost:${PORT}/api`);
+  console.log(`💡 Note: Main functionality runs client-side - server is optional`);
 });

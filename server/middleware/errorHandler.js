@@ -18,11 +18,6 @@ export const errorHandler = (err, req, res, next) => {
     error.status = 503;
   }
 
-  if (err.response?.status === 401) {
-    error.message = 'Authentication failed';
-    error.status = 401;
-  }
-
   if (err.response?.status === 429) {
     error.message = 'Rate limit exceeded';
     error.status = 429;

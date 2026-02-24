@@ -32,7 +32,7 @@ const Footer = () => {
               </span>
             </div>
             <p className="text-sm text-gray-400 leading-relaxed">
-              Discover the perfect cocktail based on your favorite songs using AI-powered audio analysis.
+              Discover the perfect cocktail based on audio analysis using AI-powered mood detection.
             </p>
             <div className="flex items-center space-x-1 text-xs text-gray-500">
               <span>Made with</span>
@@ -55,11 +55,6 @@ const Footer = () => {
               <li>
                 <a href="#how-it-works" className="text-sm text-gray-400 hover:text-cocktail-gold transition-colors">
                   How It Works
-                </a>
-              </li>
-              <li>
-                <a href="#api" className="text-sm text-gray-400 hover:text-cocktail-gold transition-colors">
-                  API Documentation
                 </a>
               </li>
               <li>
@@ -97,9 +92,9 @@ const Footer = () => {
               <p>Please drink responsibly.</p>
               <p className="flex items-center space-x-1">
                 <span>Powered by</span>
-                <span className="text-cocktail-gold">Spotify</span>
+                <span className="text-cocktail-gold">Web Audio API</span>
                 <span>&</span>
-                <span className="text-cocktail-gold">TheCocktailDB</span>
+                <span className="text-cocktail-gold">FFT Analysis</span>
               </p>
             </div>
           </div>

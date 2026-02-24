@@ -1,7 +1,7 @@
 {
   "name": "sonic-mixologist-client",
   "version": "1.0.0",
-  "description": "Frontend for Sonic Mixologist - Spotify to cocktail recommendation engine",
+  "description": "Frontend for Sonic Mixologist - Audio-only architecture",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,14 +10,12 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
-    "axios": "^1.6.0",
     "clsx": "^2.0.0",
     "fft-js": "^0.0.12",
     "framer-motion": "^10.16.16",
     "lucide-react": "^0.294.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-query": "^3.39.3",
     "react-router-dom": "^6.8.0"
   },
   "devDependencies": {
@@ -34,11 +32,12 @@
     "vite": "^5.0.8"
   },
   "keywords": [
-    "spotify",
+    "audio",
     "cocktails",
     "recommendation",
     "react",
-    "vite"
+    "vite",
+    "client-side"
   ],
   "author": "Sonic Mixologist Team",
   "license": "MIT"
