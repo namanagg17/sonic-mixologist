@@ -1,0 +1,944 @@
+# Query: Cocktail
+# ContextLines: 1
+
+386 results - 20 files
+
+DEMO.md:
+   61  - Displays results page with default audio features
+   62: - Shows "Bartender's Choice" cocktail
+   63  - Displays confidence score around 50%
+
+   79  - Accurate mood cluster assignment
+   80: - Relevant cocktail recommendations
+   81  - Higher confidence scores (70%+)
+
+  113  - Excludes specified ingredients
+  114: - Updates cocktail recommendation
+  115  
+
+  252    "instructions": "Shake with ice and strain into glass...",
+  253:   "image": "https://www.thecocktaildb.com/images/media/drink/twyrrp1468927316.jpg",
+  254    "isAlcoholic": true,
+
+  263  1. **Introduction** (30s)
+  264:    - Explain the concept: music to cocktails
+  265     - Show the landing page
+
+  298     - Show Spotify API usage
+  299:    - Demonstrate TheCocktailDB integration
+  300     - Explain caching strategy
+
+README.md:
+   2  
+   3: A cross-domain recommendation engine that converts Spotify audio features into cocktail or mocktail recommendations using a custom translation algorithm.
+   4  
+
+  17  - Custom translation engine with weighted scoring
+  18: - Cocktail API integration via TheCocktailDB
+  19: - Responsive dark cocktail aesthetic UI
+  20  - Caching layer for performance
+
+TRANSLATION_LOGIC.md:
+    2  
+    3: This document explains the core algorithm that translates Spotify audio features into cocktail recommendations.
+    4  
+
+    6  
+    7: The translation engine uses a weighted scoring system to map audio features to mood clusters, which then correspond to specific cocktail types. This creates a scientifically-inspired bridge between music and mixology.
+    8  
+
+   43  - **Music**: Rock, metal, intense electronic
+   44: - **Cocktails**: Old Fashioned, Negroni, Manhattan
+   45  - **Why**: Intense, complex flavors match powerful music
+
+   49  - **Music**: Acoustic pop, folk, soft ballads
+   50: - **Cocktails**: Mojito, Piña Colada, Margarita
+   51  - **Why**: Refreshing, approachable flavors match cheerful mood
+
+   55  - **Music**: Punk, alternative, some electronic
+   56: - **Cocktails**: Whiskey Sour, Sidecar, Lemon Drop
+   57  - **Why**: Sharp, tangy flavors match edgy sounds
+
+   61  - **Music**: Smooth jazz, R&B, lounge
+   62: - **Cocktails**: White Russian, Brandy Alexander, Irish Coffee
+   63  - **Why**: Smooth, rich textures match mellow vibes
+
+   67  - **Music**: Dance pop, disco, upbeat electronic
+   68: - **Cocktails**: Mimosa, French 75, Aperol Spritz
+   69  - **Why**: Bubbly, refreshing qualities match energetic mood
+
+   73  - **Music**: Dark ambient, doom metal, trip-hop
+   74: - **Cocktails**: Sazerac, Old Fashioned, Rob Roy
+   75  - **Why**: Complex, spirit-focused drinks match intense mood
+
+   79  - **Music**: Tropical house, calypso, upbeat pop
+   80: - **Cocktails**: Mai Tai, Zombie, Hurricane
+   81  - **Why**: Fruity, exotic flavors match vibrant energy
+
+   85  - **Music**: Various genres with moderate characteristics
+   86: - **Cocktails**: Gin & Tonic, Vodka Soda, Classic Martini
+   87  - **Why**: Versatile, classic drinks work for any mood
+
+  114  
+  115: ### Step 4: Map to Cocktails
+  116: Each cluster has predefined cocktail types that match its flavor profile. We select one randomly from the cluster's options.
+  117  
+
+  123  - **Cluster**: Effervescent & Refreshing
+  124: - **Cocktail**: French 75
+  125: - **Reasoning**: The song's dynamic shifts and celebratory nature match the bubbly, sophisticated cocktail
+  126  
+
+  130  - **Cluster**: Creamy & Smooth
+  131: - **Cocktail**: White Russian
+  132: - **Reasoning**: The emotional depth and smooth piano match the rich, comforting cocktail
+  133  
+
+  137  - **Cluster**: Fruity & Tropical
+  138: - **Cocktail**: Mai Tai
+  139: - **Reasoning**: The party vibe and funk energy match the fun, tropical cocktail
+  140  
+
+  153  
+  154: ### Cocktail API Failures
+  155: If TheCocktailDB is unavailable:
+  156  - Return "Bartender's Choice" with generic ingredients
+
+  171  1. **Machine Learning**: Train on user preferences to refine weights
+  172: 2. **Seasonal Adjustments**: Consider seasonal cocktail preferences
+  173: 3. **Cultural Variations**: Account for regional cocktail preferences
+  174  4. **User Feedback Loop**: Allow users to rate recommendations
+
+  199  
+  200: This algorithm creates a unique, scientifically-inspired bridge between music and mixology, providing users with personalized cocktail recommendations based on their musical preferences.
+
+client/index.html:
+   6      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   7:     <title>Sonic Mixologist - Spotify to Cocktail Recommendations</title>
+   8:     <meta name="description" content="Discover the perfect cocktail based on your favorite songs using AI-powered audio analysis" />
+   9      
+
+  21    </head>
+  22:   <body class="bg-cocktail-dark text-white min-h-screen">
+  23      <div id="root"></div>
+
+client/package.json:
+   3    "version": "1.0.0",
+   4:   "description": "Frontend for Sonic Mixologist - Spotify to cocktail recommendation engine",
+   5    "type": "module",
+
+  36      "spotify",
+  37:     "cocktails",
+  38      "recommendation",
+
+client/tailwind.config.js:
+   9        colors: {
+  10:         'cocktail-dark': '#0a0a0a',
+  11:         'cocktail-darker': '#050505',
+  12:         'cocktail-gold': '#d4af37',
+  13:         'cocktail-amber': '#ff6b35',
+  14:         'cocktail-rose': '#e63946',
+  15:         'cocktail-mint': '#52b788',
+  16:         'cocktail-purple': '#7209b7',
+  17:         'cocktail-blue': '#4361ee',
+  18        },
+  19        fontFamily: {
+  20:         'cocktail': ['Georgia', 'serif'],
+  21          'modern': ['Inter', 'system-ui', 'sans-serif'],
+
+client/src/index.css:
+   6    * {
+   7:     @apply border-cocktail-gold/20;
+   8    }
+
+  10    body {
+  11:     @apply bg-gradient-to-br from-cocktail-darker via-cocktail-dark to-black;
+  12      @apply font-modern;
+
+  21  @layer components {
+  22:   .cocktail-button {
+  23:     @apply bg-gradient-to-r from-cocktail-gold to-cocktail-amber;
+  24:     @apply text-cocktail-dark font-semibold;
+  25      @apply px-6 py-3 rounded-lg;
+
+  30    
+  31:   .cocktail-input {
+  32:     @apply bg-cocktail-darker/50 border border-cocktail-gold/30;
+  33:     @apply text-white placeholder-cocktail-gold/50;
+  34      @apply px-4 py-3 rounded-lg;
+  35:     @apply focus:outline-none focus:border-cocktail-gold focus:ring-2 focus:ring-cocktail-gold/20;
+  36      @apply transition-all duration-300;
+
+  44    .audio-bar {
+  45:     @apply bg-gradient-to-t from-cocktail-gold to-cocktail-amber;
+  46      @apply rounded-full transition-all duration-500;
+
+  62  @layer utilities {
+  63:   .text-cocktail-gradient {
+  64:     @apply bg-gradient-to-r from-cocktail-gold via-cocktail-amber to-cocktail-rose;
+  65      @apply bg-clip-text text-transparent;
+
+  67    
+  68:   .bg-cocktail-gradient {
+  69:     @apply bg-gradient-to-br from-cocktail-gold/20 via-cocktail-amber/10 to-transparent;
+  70    }
+  71    
+  72:   .border-cocktail-gradient {
+  73:     @apply border-gradient-to-r from-cocktail-gold to-cocktail-amber;
+  74    }
+
+  82  ::-webkit-scrollbar-track {
+  83:   @apply bg-cocktail-darker;
+  84  }
+
+  86  ::-webkit-scrollbar-thumb {
+  87:   @apply bg-gradient-to-b from-cocktail-gold to-cocktail-amber;
+  88    @apply rounded-full;
+
+  91  ::-webkit-scrollbar-thumb:hover {
+  92:   @apply from-cocktail-amber to-cocktail-rose;
+  93  }
+
+client/src/components/AudioFeatureDisplay.jsx:
+   10        icon: Zap,
+   11:       color: 'cocktail-amber',
+   12        description: 'How intense and powerful the song feels'
+
+   18        icon: Activity,
+   19:       color: 'cocktail-mint',
+   20        description: 'How positive or cheerful the mood is'
+
+   26        icon: Volume2,
+   27:       color: 'cocktail-blue',
+   28        description: 'The speed and rhythm of the song',
+
+   36        icon: Music,
+   37:       color: 'cocktail-purple',
+   38        description: 'How acoustic vs electronic the song sounds'
+
+   76                <div className="text-right">
+   77:                 <div className="text-lg font-semibold text-cocktail-gold">
+   78                    {feature.isTempo ? `${Math.round(feature.actualValue)} BPM` : `${percentage}%`}
+
+   88                {/* Background */}
+   89:               <div className="w-full h-3 bg-cocktail-darker rounded-full overflow-hidden">
+   90                  {/* Animated Fill */}
+
+  140          transition={{ delay: 0.8 }}
+  141:         className="mt-8 p-4 bg-cocktail-gold/10 rounded-lg border border-cocktail-gold/20"
+  142        >
+  143:         <h4 className="text-sm font-semibold text-cocktail-gold mb-2">
+  144            Audio Profile Summary
+
+client/src/components/DrinkCard.jsx:
+   65          ) : (
+   66:           <div className="w-full h-full bg-gradient-to-br from-cocktail-gold/20 to-cocktail-amber/20 flex items-center justify-center">
+   67              <div className="text-center">
+   68:               <div className="w-16 h-16 mx-auto mb-2 bg-cocktail-gold/20 rounded-full flex items-center justify-center">
+   69:                 <Glass className="w-8 h-8 text-cocktail-gold" />
+   70                </div>
+   71:               <p className="text-cocktail-gold text-sm">No Image Available</p>
+   72              </div>
+
+   82              onClick={handleShare}
+   83:             className="p-2 bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-cocktail-gold/20 transition-colors"
+   84              aria-label="Share drink"
+
+   94                drink.isAlcoholic 
+   95:                 ? 'bg-cocktail-rose text-white' 
+   96:                 : 'bg-cocktail-mint text-white'
+   97              }`}>
+
+  107          <div className="mb-4">
+  108:           <h3 className="text-2xl font-cocktail text-cocktail-gradient mb-2">
+  109              {drink.name}
+
+  129          <div className="mb-4">
+  130:           <h4 className="text-sm font-semibold text-cocktail-gold uppercase tracking-wider mb-2">
+  131              Ingredients
+
+  135                <div key={index} className="flex items-center space-x-2 text-sm">
+  136:                 <div className="w-2 h-2 bg-cocktail-gold rounded-full" />
+  137                  <span className="text-gray-300">
+
+  148            <div className="flex items-center justify-between mb-2">
+  149:             <h4 className="text-sm font-semibold text-cocktail-gold uppercase tracking-wider">
+  150                Instructions
+
+  155                  onClick={handleCopyInstructions}
+  156:                 className="p-1 text-gray-400 hover:text-cocktail-gold transition-colors"
+  157                  aria-label="Copy instructions"
+
+  159                  {copied ? (
+  160:                   <Check className="w-4 h-4 text-cocktail-mint" />
+  161                  ) : (
+
+  168                    onClick={() => setShowFullInstructions(!showFullInstructions)}
+  169:                   className="p-1 text-gray-400 hover:text-cocktail-gold transition-colors"
+  170                    aria-label={showFullInstructions ? 'Show less' : 'Show more'}
+
+  187          {/* Footer */}
+  188:         <div className="flex items-center justify-between pt-4 border-t border-cocktail-gold/20">
+  189            <div className="flex items-center space-x-2">
+  190:             <Heart className="w-4 h-4 text-cocktail-rose" />
+  191              <span className="text-xs text-gray-400">Perfect Match</span>
+
+  194            {drink.confidence && (
+  195:             <div className="text-xs text-cocktail-gold">
+  196                {Math.round(drink.confidence * 100)}% Match
+
+client/src/components/Footer.jsx:
+    1  import { motion } from 'framer-motion'
+    2: import { Cocktail, Music, Github, Twitter, Heart } from 'lucide-react'
+    3  
+
+   20    return (
+   21:     <footer className="bg-cocktail-darker border-t border-cocktail-gold/20">
+   22        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+   26              <div className="flex items-center space-x-2">
+   27:               <Cocktail className="w-8 h-8 text-cocktail-gold" />
+   28:               <Music className="w-5 h-5 text-cocktail-amber" />
+   29:               <span className="text-xl font-cocktail text-cocktail-gradient">
+   30                  Sonic Mixologist
+
+   33              <p className="text-sm text-gray-400 leading-relaxed">
+   34:               Discover the perfect cocktail based on your favorite songs using AI-powered audio analysis.
+   35              </p>
+
+   37                <span>Made with</span>
+   38:               <Heart className="w-3 h-3 text-cocktail-rose" />
+   39:               <span>and cocktails</span>
+   40              </div>
+
+   44            <div className="space-y-4">
+   45:             <h3 className="text-sm font-semibold text-cocktail-gold uppercase tracking-wider">
+   46                Quick Links
+
+   49                <li>
+   50:                 <a href="#about" className="text-sm text-gray-400 hover:text-cocktail-gold transition-colors">
+   51                    About
+
+   54                <li>
+   55:                 <a href="#how-it-works" className="text-sm text-gray-400 hover:text-cocktail-gold transition-colors">
+   56                    How It Works
+
+   59                <li>
+   60:                 <a href="#api" className="text-sm text-gray-400 hover:text-cocktail-gold transition-colors">
+   61                    API Documentation
+
+   64                <li>
+   65:                 <a href="#privacy" className="text-sm text-gray-400 hover:text-cocktail-gold transition-colors">
+   66                    Privacy Policy
+
+   73            <div className="space-y-4">
+   74:             <h3 className="text-sm font-semibold text-cocktail-gold uppercase tracking-wider">
+   75                Connect
+
+   83                    rel="noopener noreferrer"
+   84:                   className="p-2 rounded-lg bg-cocktail-gold/10 text-cocktail-gold hover:bg-cocktail-gold/20 transition-colors"
+   85                    whileHover={{ scale: 1.1 }}
+
+   98                  <span>Powered by</span>
+   99:                 <span className="text-cocktail-gold">Spotify</span>
+  100                  <span>&</span>
+  101:                 <span className="text-cocktail-gold">TheCocktailDB</span>
+  102                </p>
+
+  107          {/* Bottom bar */}
+  108:         <div className="mt-8 pt-8 border-t border-cocktail-gold/20">
+  109            <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+
+  113              <div className="flex items-center space-x-4 text-xs text-gray-500">
+  114:               <a href="#terms" className="hover:text-cocktail-gold transition-colors">
+  115                  Terms of Service
+
+  117                <span>•</span>
+  118:               <a href="#privacy" className="hover:text-cocktail-gold transition-colors">
+  119                  Privacy Policy
+
+client/src/components/LoadingSpinner.jsx:
+   28              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+   29:             className={`${sizeClasses[size]} text-cocktail-gold/30`}
+   30            >
+
+   44              }}
+   45:             className={`absolute inset-0 ${sizeClasses[size]} text-cocktail-amber`}
+   46            >
+   47:             <Cocktail className="w-full h-full" />
+   48            </motion.div>
+
+   53        <div className="relative">
+   54:         <div className={`${sizeClasses[size]} border-2 border-cocktail-gold/20 rounded-full`} />
+   55          <motion.div
+
+   57            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+   58:           className={`absolute inset-0 ${sizeClasses[size]} border-2 border-cocktail-gold rounded-full border-t-transparent border-r-transparent`}
+   59          />
+
+   67            transition={{ delay: 0.3 }}
+   68:           className="text-cocktail-gold text-center max-w-xs"
+   69          >
+
+   73  
+   74:       {/* Cocktail Mixing Animation */}
+   75        <div className="flex items-center space-x-2">
+
+   87              }}
+   88:             className="w-2 h-8 bg-gradient-to-t from-cocktail-gold to-cocktail-amber rounded-full"
+   89            />
+
+  107        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+  108:       className={`${sizeClasses[size]} border-2 border-cocktail-gold rounded-full border-t-transparent border-r-transparent`}
+  109      />
+
+client/src/components/Navbar.jsx:
+    3  import { motion } from 'framer-motion'
+    4: import { Cocktail, Music, Menu, X, Github, ExternalLink } from 'lucide-react'
+    5  
+
+   16    return (
+   17:     <nav className="bg-cocktail-darker/80 backdrop-blur-lg border-b border-cocktail-gold/20 sticky top-0 z-50">
+   18        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+   26              >
+   27:               <Cocktail className="w-8 h-8 text-cocktail-gold group-hover:text-cocktail-amber transition-colors" />
+   28:               <Music className="w-5 h-5 text-cocktail-amber absolute -bottom-1 -right-1" />
+   29              </motion.div>
+   30:             <span className="text-xl font-cocktail text-cocktail-gradient hidden sm:block">
+   31                Sonic Mixologist
+
+   40                  to={item.href}
+   41:                 className={`text-sm font-medium transition-colors hover:text-cocktail-gold ${
+   42                    location.pathname === item.href
+   43:                     ? 'text-cocktail-gold'
+   44                      : 'text-gray-300'
+
+   58                rel="noopener noreferrer"
+   59:               className="hidden sm:flex items-center space-x-2 text-sm text-gray-400 hover:text-cocktail-gold transition-colors"
+   60              >
+
+   67                onClick={() => setIsMenuOpen(!isMenuOpen)}
+   68:               className="md:hidden p-2 rounded-lg text-gray-400 hover:text-cocktail-gold hover:bg-cocktail-gold/10 transition-colors"
+   69              >
+
+   84              exit={{ opacity: 0, y: -10 }}
+   85:             className="md:hidden py-4 border-t border-cocktail-gold/20"
+   86            >
+
+   92                    onClick={() => setIsMenuOpen(false)}
+   93:                   className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:text-cocktail-gold hover:bg-cocktail-gold/10 ${
+   94                      location.pathname === item.href
+   95:                       ? 'text-cocktail-gold bg-cocktail-gold/10'
+   96                        : 'text-gray-300'
+
+  102                
+  103:               <div className="pt-4 mt-4 border-t border-cocktail-gold/20">
+  104                  <a
+
+  107                    rel="noopener noreferrer"
+  108:                   className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-400 hover:text-cocktail-gold transition-colors"
+  109                  >
+
+client/src/components/SearchBar.jsx:
+   83                  transition={{ repeat: Infinity, duration: 1.5 }}
+   84:                 className="w-5 h-5 text-cocktail-rose"
+   85                >
+
+   88              ) : (
+   89:               <Search className="w-5 h-5 text-cocktail-gold/50 group-focus-within:text-cocktail-gold transition-colors" />
+   90              )}
+
+  103              disabled={disabled}
+  104:             className={`cocktail-input w-full pl-12 pr-24 text-lg ${
+  105                disabled ? 'opacity-50 cursor-not-allowed' : ''
+  106:             } ${isListening ? 'border-cocktail-rose' : ''}`}
+  107            />
+
+  114                  onClick={handleClear}
+  115:                 className="p-2 text-gray-400 hover:text-cocktail-gold transition-colors rounded-lg hover:bg-cocktail-gold/10"
+  116                  aria-label="Clear search"
+
+  128                    isListening 
+  129:                     ? 'text-cocktail-rose bg-cocktail-rose/10' 
+  130:                     : 'text-gray-400 hover:text-cocktail-gold hover:bg-cocktail-gold/10'
+  131                  } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+
+  140                disabled={!value.trim() || disabled}
+  141:               className="cocktail-button px-4 py-2 text-sm disabled:opacity-50"
+  142              >
+
+  150                layoutId="search-focus"
+  151:               className="absolute inset-0 rounded-lg border-2 border-cocktail-gold pointer-events-none"
+  152                initial={{ opacity: 0, scale: 0.95 }}
+
+  163              animate={{ opacity: 1, y: 0 }}
+  164:             className="absolute -bottom-8 left-0 text-sm text-cocktail-rose flex items-center space-x-2"
+  165            >
+
+  175                    }}
+  176:                   className="w-1 bg-cocktail-rose rounded-full"
+  177                  />
+
+client/src/pages/AgeGate.jsx:
+   16    return (
+   17:     <div className="min-h-screen bg-gradient-to-br from-cocktail-darker via-cocktail-dark to-black flex items-center justify-center p-4">
+   18        <motion.div
+
+   31            <div className="relative">
+   32:             <Wine className="w-12 h-12 text-cocktail-gold" />
+   33:             <Music className="w-8 h-8 text-cocktail-amber absolute -bottom-1 -right-1" />
+   34            </div>
+
+   41            transition={{ delay: 0.3 }}
+   42:           className="text-3xl font-cocktail text-cocktail-gradient mb-4"
+   43          >
+
+   53          >
+   54:           Discover the perfect cocktail based on your favorite songs using AI-powered audio analysis
+   55          </motion.p>
+
+   63          >
+   64:           <div className="bg-cocktail-gold/10 border border-cocktail-gold/20 rounded-lg p-4 mb-6">
+   65:             <p className="text-sm text-cocktail-gold mb-2">
+   66                🍸 Age Verification Required
+
+   77                disabled={isLoading}
+   78:               className="cocktail-button w-full text-lg py-4 disabled:opacity-50"
+   79              >
+
+   81                  <span className="flex items-center justify-center">
+   82:                   <div className="w-5 h-5 border-2 border-cocktail-dark border-t-transparent rounded-full animate-spin mr-2" />
+   83                    Verifying...
+
+   92                disabled={isLoading}
+   93:               className="w-full px-6 py-3 border border-cocktail-gold/30 text-cocktail-gold rounded-lg hover:bg-cocktail-gold/10 transition-all duration-300 disabled:opacity-50"
+   94              >
+
+  113        <div className="fixed inset-0 pointer-events-none">
+  114:         <div className="absolute top-20 left-20 w-32 h-32 bg-cocktail-gold/5 rounded-full blur-3xl" />
+  115:         <div className="absolute bottom-20 right-20 w-40 h-40 bg-cocktail-amber/5 rounded-full blur-3xl" />
+  116:         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-cocktail-purple/5 rounded-full blur-3xl" />
+  117        </div>
+
+client/src/pages/Home.jsx:
+    4  import { useQuery } from 'react-query'
+    5: import { Search, Music, Cocktail, Sparkles, TrendingUp } from 'lucide-react'
+    6  import SearchBar from '../components/SearchBar'
+
+   57        <section className="relative overflow-hidden py-20 px-4">
+   58:         <div className="absolute inset-0 bg-gradient-to-br from-cocktail-gold/10 via-transparent to-cocktail-purple/10" />
+   59          
+
+   72                  >
+   73:                   <Music className="w-16 h-16 text-cocktail-gold/20" />
+   74                  </motion.div>
+   75:                 <Cocktail className="w-16 h-16 text-cocktail-gold relative z-10" />
+   76                </div>
+
+   78  
+   79:             <h1 className="text-5xl md:text-7xl font-cocktail text-cocktail-gradient mb-6">
+   80                Sonic Mixologist
+
+   83              <p className="text-xl md:text-2xl text-gray-300 mb-8 leading-relaxed">
+   84:               Transform your favorite songs into perfect cocktail recommendations
+   85              </p>
+
+   87              <div className="flex flex-col items-center space-y-4 mb-12">
+   88:               <div className="flex items-center space-x-2 text-cocktail-gold">
+   89                  <Sparkles className="w-5 h-5" />
+
+  118          {/* Background decorations */}
+  119:         <div className="absolute top-10 left-10 w-32 h-32 bg-cocktail-gold/5 rounded-full blur-3xl" />
+  120:         <div className="absolute bottom-10 right-10 w-40 h-40 bg-cocktail-amber/5 rounded-full blur-3xl" />
+  121        </section>
+
+  123        {/* Features Section */}
+  124:       <section id="how-it-works" className="py-20 px-4 bg-cocktail-darker/50">
+  125          <div className="max-w-6xl mx-auto">
+
+  132            >
+  133:             <h2 className="text-4xl font-cocktail text-cocktail-gradient mb-4">
+  134                How It Works
+
+  146                  description: 'Enter any song name and we\'ll analyze its audio features using Spotify\'s API.',
+  147:                 color: 'cocktail-blue'
+  148                },
+
+  152                  description: 'Our AI analyzes energy, valence, tempo, and acousticness to understand the song\'s mood.',
+  153:                 color: 'cocktail-purple'
+  154                },
+  155                {
+  156:                 icon: Cocktail,
+  157                  title: 'Perfect Match',
+  158:                 description: 'We translate the audio profile into a mood cluster and recommend the perfect cocktail.',
+  159:                 color: 'cocktail-gold'
+  160                }
+
+  194            >
+  195:             <h2 className="text-3xl font-cocktail text-cocktail-gradient mb-4">
+  196                Trending Songs
+
+  198              <p className="text-gray-400">
+  199:               Try these popular songs to see what cocktails they recommend
+  200              </p>
+
+  211                  onClick={() => handleRecentSearch(song)}
+  212:                 className="glass-card p-4 text-left hover:bg-cocktail-gold/10 transition-all duration-300 group"
+  213                >
+  214                  <div className="flex items-center space-x-3">
+  215:                   <Music className="w-5 h-5 text-cocktail-gold group-hover:scale-110 transition-transform" />
+  216                    <div>
+  217:                     <p className="text-white font-medium group-hover:text-cocktail-gold transition-colors">
+  218                        {song.split(' - ')[0]}
+
+  232        {recentSearches.length > 0 && (
+  233:         <section className="py-12 px-4 bg-cocktail-darker/30">
+  234            <div className="max-w-4xl mx-auto">
+  235:             <h3 className="text-xl font-semibold text-cocktail-gold mb-6">
+  236                Recent Searches
+
+  242                    onClick={() => handleRecentSearch(search)}
+  243:                   className="px-4 py-2 bg-cocktail-gold/10 border border-cocktail-gold/20 rounded-full text-sm text-cocktail-gold hover:bg-cocktail-gold/20 transition-colors"
+  244                  >
+
+client/src/pages/Results.jsx:
+    9    Music, 
+   10:   Cocktail, 
+   11    Volume2,
+
+   78          <div className="text-center">
+   79:           <h2 className="text-2xl font-cocktail text-cocktail-gradient mb-4">
+   80              No Search Query
+
+   86              onClick={handleBack}
+   87:             className="cocktail-button"
+   88            >
+
+  100            <LoadingSpinner />
+  101:           <p className="text-cocktail-gold mt-4">
+  102              Analyzing audio features and finding your perfect match...
+
+  112          <div className="text-center max-w-md">
+  113:           <h2 className="text-2xl font-cocktail text-cocktail-gradient mb-4">
+  114              Something went wrong
+
+  121                onClick={handleRegenerate}
+  122:               className="cocktail-button"
+  123              >
+
+  127                onClick={handleBack}
+  128:               className="px-6 py-3 border border-cocktail-gold/30 text-cocktail-gold rounded-lg hover:bg-cocktail-gold/10 transition-colors"
+  129              >
+
+  149                onClick={handleBack}
+  150:               className="flex items-center space-x-2 text-cocktail-gold hover:text-cocktail-amber transition-colors"
+  151              >
+
+  158                  onClick={() => setShowFilters(!showFilters)}
+  159:                 className="flex items-center space-x-2 px-4 py-2 border border-cocktail-gold/30 rounded-lg text-cocktail-gold hover:bg-cocktail-gold/10 transition-colors"
+  160                >
+
+  166                  onClick={handleShare}
+  167:                 className="flex items-center space-x-2 px-4 py-2 border border-cocktail-gold/30 rounded-lg text-cocktail-gold hover:bg-cocktail-gold/10 transition-colors"
+  168                >
+
+  174                  onClick={handleRegenerate}
+  175:                 className="flex items-center space-x-2 px-4 py-2 border border-cocktail-gold/30 rounded-lg text-cocktail-gold hover:bg-cocktail-gold/10 transition-colors"
+  176                >
+
+  184            <div className="text-center">
+  185:             <h1 className="text-4xl font-cocktail text-cocktail-gradient mb-2">
+  186                {result.song}
+
+  206            >
+  207:             <h3 className="text-lg font-semibold text-cocktail-gold mb-4">
+  208                Preferences
+
+  221                  {isMocktail ? (
+  222:                   <ToggleRight className="w-8 h-8 text-cocktail-gold" />
+  223                  ) : (
+
+  238                        excludeIngredients.includes(ingredient)
+  239:                         ? 'bg-cocktail-rose text-white'
+  240:                         : 'bg-cocktail-gold/20 text-cocktail-gold hover:bg-cocktail-gold/30'
+  241                      }`}
+
+  260                <div className="flex items-center space-x-2 mb-6">
+  261:                 <Music className="w-6 h-6 text-cocktail-gold" />
+  262:                 <h2 className="text-2xl font-cocktail text-cocktail-gradient">
+  263                    Audio Analysis
+
+  268  
+  269:               <div className="mt-6 p-4 bg-cocktail-gold/10 rounded-lg">
+  270:                 <p className="text-sm text-cocktail-gold font-medium mb-2">
+  271                    Mood Cluster
+
+  282                  <div className="mt-4 text-center">
+  283:                   <span className="text-xs text-cocktail-gold bg-cocktail-gold/10 px-2 py-1 rounded-full">
+  284                      Cached Result
+
+  298                <div className="flex items-center space-x-2 mb-6">
+  299:                 <Cocktail className="w-6 h-6 text-cocktail-gold" />
+  300:                 <h2 className="text-2xl font-cocktail text-cocktail-gradient">
+  301                    Perfect Match
+
+  315                          key={index}
+  316:                         className="text-xs bg-cocktail-gold/10 text-cocktail-gold px-2 py-1 rounded-full"
+  317                        >
+
+  338            {result.fallback && (
+  339:             <p className="text-cocktail-amber text-xs mt-2">
+  340                Using fallback data due to API limitations
+
+server/package.json:
+   3    "version": "1.0.0",
+   4:   "description": "Backend for Sonic Mixologist - Spotify to cocktail recommendation engine",
+   5    "main": "server.js",
+
+  25      "spotify",
+  26:     "cocktails",
+  27      "recommendation",
+
+server/controllers/recommendController.js:
+    2  import { translationEngine } from '../services/translationEngine.js';
+    3: import { cocktailService } from '../services/cocktailService.js';
+    4  import { cache } from '../utils/cache.js';
+
+   70  
+   71:       // Step 3: Get cocktail recommendation based on translation
+   72:       const cocktailOptions = {
+   73          excludeIngredients: excludeIngredients || [],
+
+   76  
+   77:       let cocktail;
+   78        try {
+   79:         cocktail = await cocktailService.getCocktailRecommendation(
+   80            translation.recommendedDrinkName,
+   81:           cocktailOptions
+   82          );
+   83:       } catch (cocktailError) {
+   84:         console.warn('Cocktail API failed, using fallback:', cocktailError.message);
+   85:         cocktail = {
+   86            name: 'Bartender\'s Choice',
+
+   89            instructions: 'Ask your bartender to create something special!',
+   90:           image: 'https://www.thecocktaildb.com/images/media/drink/vrwquq1478252802.jpg'
+   91          };
+
+  108          clusterKey: translation.clusterKey,
+  109:         drink: cocktail.name,
+  110:         ingredients: cocktail.ingredients,
+  111:         measurements: cocktail.measurements,
+  112:         instructions: cocktail.instructions,
+  113:         image: cocktail.image,
+  114:         isAlcoholic: cocktail.isAlcoholic !== false,
+  115:         glass: cocktail.glass,
+  116:         category: cocktail.category,
+  117          allPossibleDrinks: translation.allPossibleDrinks,
+
+  149          instructions: 'Ask your bartender to create something special!',
+  150:         image: 'https://www.thecocktaildb.com/images/media/drink/vrwquq1478252802.jpg',
+  151          isAlcoholic: true,
+
+  228  
+  229:           // Get cocktail recommendation
+  230:           const cocktail = await cocktailService.getCocktailRecommendation(
+  231              translation.recommendedDrinkName,
+
+  246              confidence: translation.confidence,
+  247:             drink: cocktail.name,
+  248:             ingredients: cocktail.ingredients,
+  249:             instructions: cocktail.instructions,
+  250:             image: cocktail.image,
+  251              cached: false
+
+  275  
+  276:   // Get translation only (no cocktail)
+  277    async getTranslationOnly(req, res) {
+
+server/routes/recommend.js:
+  11  
+  12: // Get translation only (no cocktail)
+  13  router.get('/translation', recommendController.getTranslationOnly);
+
+server/services/cocktailService.js:
+    2  
+    3: class CocktailService {
+    4    constructor() {
+    5:     this.baseURL = 'https://www.thecocktaildb.com/api/json/v1/1';
+    6:     this.fallbackCocktails = [
+    7        {
+
+   11          instructions: 'Ask your bartender to create something special based on your preferences!',
+   12:         image: 'https://www.thecocktaildb.com/images/media/drink/vrwquq1478252802.jpg'
+   13        }
+
+   16  
+   17:   // Search cocktail by name
+   18:   async searchCocktailByName(name) {
+   19      try {
+
+   24        if (response.data.drinks && response.data.drinks.length > 0) {
+   25:         return this.formatCocktailData(response.data.drinks[0]);
+   26        }
+
+   29      } catch (error) {
+   30:       console.error('Cocktail search error:', error.message);
+   31        return null;
+
+   34  
+   35:   // Get random cocktail
+   36:   async getRandomCocktail() {
+   37      try {
+
+   40        if (response.data.drinks && response.data.drinks.length > 0) {
+   41:         return this.formatCocktailData(response.data.drinks[0]);
+   42        }
+
+   45      } catch (error) {
+   46:       console.error('Random cocktail error:', error.message);
+   47        return null;
+
+   50  
+   51:   // Filter cocktails by ingredient (exclude certain ingredients)
+   52    async filterByIngredient(excludeIngredients = []) {
+   53      try {
+   54:       // Get a list of all cocktails first
+   55        const response = await axios.get(`${this.baseURL}/filter.php`, {
+   56:         params: { a: 'Alcoholic' } // Get alcoholic cocktails by default
+   57        });
+
+   62  
+   63:       // For each cocktail, get detailed info and check ingredients
+   64:       const validCocktails = [];
+   65        const sampleSize = Math.min(10, response.data.drinks.length); // Limit API calls
+
+   67        for (let i = 0; i < sampleSize; i++) {
+   68:         const cocktail = response.data.drinks[i];
+   69:         const details = await this.getCocktailDetails(cocktail.idDrink);
+   70          
+   71          if (details && !this.containsExcludedIngredients(details, excludeIngredients)) {
+   72:           validCocktails.push(details);
+   73          }
+
+   75  
+   76:       if (validCocktails.length > 0) {
+   77:         return validCocktails[Math.floor(Math.random() * validCocktails.length)];
+   78        }
+
+   86  
+   87:   // Get detailed cocktail information by ID
+   88:   async getCocktailDetails(cocktailId) {
+   89      try {
+   90        const response = await axios.get(`${this.baseURL}/lookup.php`, {
+   91:         params: { i: cocktailId }
+   92        });
+
+   94        if (response.data.drinks && response.data.drinks.length > 0) {
+   95:         return this.formatCocktailData(response.data.drinks[0]);
+   96        }
+
+   99      } catch (error) {
+  100:       console.error('Cocktail details error:', error.message);
+  101        return null;
+
+  104  
+  105:   // Format cocktail data from API response
+  106:   formatCocktailData(drink) {
+  107      const ingredients = [];
+
+  125        instructions: drink.strInstructions || 'No instructions available',
+  126:       image: drink.strDrinkThumb || 'https://via.placeholder.com/300x300?text=Cocktail',
+  127        category: drink.strCategory,
+
+  132  
+  133:   // Check if cocktail contains excluded ingredients
+  134:   containsExcludedIngredients(cocktail, excludeIngredients) {
+  135      if (!excludeIngredients || excludeIngredients.length === 0) {
+
+  138  
+  139:     const cocktailIngredients = cocktail.ingredients.map(ing => 
+  140        ing.toLowerCase().trim()
+
+  143      return excludeIngredients.some(excluded => 
+  144:       cocktailIngredients.some(ingredient => 
+  145          ingredient.includes(excluded.toLowerCase().trim())
+
+  158          // Get details for a random mocktail
+  159:         const randomCocktail = response.data.drinks[
+  160            Math.floor(Math.random() * response.data.drinks.length)
+  161          ];
+  162:         return await this.getCocktailDetails(randomCocktail.idDrink);
+  163        }
+
+  171  
+  172:   // Main method to get cocktail recommendation
+  173:   async getCocktailRecommendation(drinkName, options = {}) {
+  174      const { 
+
+  180      try {
+  181:       let cocktail = null;
+  182  
+  183:       // Priority 1: Try to find specific cocktail by name
+  184        if (!useRandom && drinkName && !isMocktail) {
+  185:         cocktail = await this.searchCocktailByName(drinkName);
+  186        }
+
+  188        // Priority 2: Filter by excluded ingredients
+  189:       if (!cocktail && !isMocktail && excludeIngredients.length > 0) {
+  190:         cocktail = await this.filterByIngredient(excludeIngredients);
+  191        }
+
+  193        // Priority 3: Get mocktail if requested
+  194:       if (!cocktail && isMocktail) {
+  195:         cocktail = await this.getMocktail();
+  196        }
+  197  
+  198:       // Priority 4: Get random cocktail
+  199:       if (!cocktail) {
+  200:         cocktail = await this.getRandomCocktail();
+  201        }
+  202  
+  203:       // Fallback: Return default cocktail
+  204:       if (!cocktail) {
+  205:         cocktail = this.fallbackCocktails[0];
+  206        }
+  207  
+  208:       return cocktail;
+  209      } catch (error) {
+  210:       console.error('Cocktail recommendation error:', error);
+  211:       return this.fallbackCocktails[0];
+  212      }
+
+  214  
+  215:   // Get multiple cocktail options for a mood cluster
+  216:   async getCocktailOptionsForCluster(clusterKey, options = {}) {
+  217      const clusterDrinkMap = {
+
+  228      const drinkNames = clusterDrinkMap[clusterKey] || ['Margarita'];
+  229:     const cocktailOptions = [];
+  230  
+
+  232      for (const drinkName of drinkNames.slice(0, 3)) { // Limit to 3 options
+  233:       const cocktail = await this.searchCocktailByName(drinkName);
+  234:       if (cocktail) {
+  235:         cocktailOptions.push(cocktail);
+  236        }
+
+  238  
+  239:     // If no cocktails found, get random ones
+  240:     if (cocktailOptions.length === 0) {
+  241        for (let i = 0; i < 3; i++) {
+  242:         const cocktail = await this.getRandomCocktail();
+  243:         if (cocktail) {
+  244:           cocktailOptions.push(cocktail);
+  245          }
+
+  248  
+  249:     return cocktailOptions;
+  250    }
+
+  252  
+  253: export const cocktailService = new CocktailService();
+  254  

@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-cocktail-gold/20;
+  }
+  
+  body {
+    @apply bg-gradient-to-br from-cocktail-darker via-cocktail-dark to-black;
+    @apply font-modern;
+    @apply antialiased;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .cocktail-button {
+    @apply bg-gradient-to-r from-cocktail-gold to-cocktail-amber;
+    @apply text-cocktail-dark font-semibold;
+    @apply px-6 py-3 rounded-lg;
+    @apply hover:shadow-lg hover:scale-105;
+    @apply transition-all duration-300;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  
+  .cocktail-input {
+    @apply bg-cocktail-darker/50 border border-cocktail-gold/30;
+    @apply text-white placeholder-cocktail-gold/50;
+    @apply px-4 py-3 rounded-lg;
+    @apply focus:outline-none focus:border-cocktail-gold focus:ring-2 focus:ring-cocktail-gold/20;
+    @apply transition-all duration-300;
+  }
+  
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+    @apply rounded-xl shadow-xl;
+  }
+  
+  .audio-bar {
+    @apply bg-gradient-to-t from-cocktail-gold to-cocktail-amber;
+    @apply rounded-full transition-all duration-500;
+  }
+  
+  .loading-shaker {
+    animation: shake 0.5s ease-in-out infinite;
+  }
+  
+  .loading-stirrer {
+    animation: stir 2s ease-in-out infinite;
+  }
+  
+  .glow-effect {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+}
+
+@layer utilities {
+  .text-cocktail-gradient {
+    @apply bg-gradient-to-r from-cocktail-gold via-cocktail-amber to-cocktail-rose;
+    @apply bg-clip-text text-transparent;
+  }
+  
+  .bg-cocktail-gradient {
+    @apply bg-gradient-to-br from-cocktail-gold/20 via-cocktail-amber/10 to-transparent;
+  }
+  
+  .border-cocktail-gradient {
+    @apply border-gradient-to-r from-cocktail-gold to-cocktail-amber;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-cocktail-darker;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gradient-to-b from-cocktail-gold to-cocktail-amber;
+  @apply rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply from-cocktail-amber to-cocktail-rose;
+}
+
+/* Loading animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Pulse animation for buttons */
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}

@@ -1,0 +1,27 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+
+import authRoutes from './routes/auth.js';
+import songRoutes from './routes/songs.js';
+import recommendRoutes from './routes/recommend.js';
+import { errorHandler } from './middleware/errorHandler.js';
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    error: 'Route not found',
+    message: `Cannot ${req.method} ${req.originalUrl}`
+  });
+});
+
+// Error handling middleware (must be last)
+app.use(errorHandler);
+
+app.listen(PORT, () => {
+  console.log(`🚀 Sonic Mixologist server running on port ${PORT}`);
+  console.log(`📡 Health check available at http://localhost:${PORT}/health`);
+  console.log(`🔗 API base URL: http://localhost:${PORT}/api`);
+});
