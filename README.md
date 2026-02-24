@@ -1,94 +1,160 @@
-# Sonic Mixologist
+# Sonic Mixologist 🎵🍸
 
-A cross-domain recommendation engine that converts Spotify audio features into cocktail or mocktail recommendations using a custom translation algorithm.
+## Overview
 
-## Tech Stack
+Sonic Mixologist is a browser-based audio analysis application that:
+1. Records live microphone input
+2. Extracts audio features using FFT
+3. Detects mood using weighted scoring
+4. Recommends a cocktail based on audio characteristics
 
-- **Frontend**: React (Vite)
-- **Backend**: Node.js + Express
-- **State Management**: React Query
-- **Hosting**: Vercel (Frontend), Render (Backend)
-- **Caching**: In-memory with Redis-ready architecture
+No external APIs are used.
 
 ## Features
 
-- Spotify OAuth 2.0 Authentication
-- Audio feature extraction (Energy, Valence, Tempo, Acousticness)
-- Custom translation engine with weighted scoring
-- Cocktail API integration via TheCocktailDB
-- Responsive dark cocktail aesthetic UI
-- Caching layer for performance
-- Mocktail mode and ingredient filtering
+- **Short-Time Fourier Transform (FFT)**
+- **RMS Energy Detection**
+- **Zero Crossing Rate (Roughness)**
+- **Spectral Centroid (Brightness)**
+- **Low Frequency Energy (Bass)**
+- **Basic Tempo Estimation**
+- **Weighted Mood Classification**
+- **Confidence Score Calculation**
+- **Fully Client-Side Processing**
+
+## Architecture
+
+```
+Home → Audio Recording → DSP Analysis → Mood Engine → Results
+```
+
+All processing happens in-browser using Web Audio API.
+
+## Tech Stack
+
+- **React**
+- **Vite**
+- **Web Audio API**
+- **fft-js**
+- **framer-motion**
+- **lucide-react**
+
+## Future Improvements
+
+- **MFCC extraction**
+- **Real-time streaming analysis**
+- **K-means clustering**
+- **Machine learning classifier**
+- **BPM refinement**
+
+## Privacy
+
+No audio is uploaded.
+All processing happens locally in browser.
 
 ## Quick Start
 
 ### Prerequisites
-- Node.js 18+ installed
-- Spotify Developer Account (for full functionality)
+- Node.js 16+
+- npm or yarn
 
-### Backend Setup
+### Installation
 
+1. Clone the repository
 ```bash
-cd server
-npm install
-cp .env.example .env
-# Add your Spotify credentials to .env
-npm run dev
+git clone <repository-url>
+cd sonic-mixologist
 ```
 
-### Frontend Setup
-
+2. Install dependencies
 ```bash
+# Client dependencies
 cd client
 npm install
-cp .env.example .env
-# Set VITE_API_URL=http://localhost:3001/api
+
+# Optional server dependencies
+cd ../server
+npm install
+```
+
+3. Start the application
+```bash
+# Client only (recommended)
+cd client
+npm run dev
+
+# Or with optional server
+cd server
 npm run dev
 ```
 
-### Access the Application
-- Frontend: http://localhost:5173
-- Backend Health: http://localhost:3001/health
+4. Open your browser to `http://localhost:5173`
 
-## Environment Variables
+### Usage
 
-### Backend (.env)
+1. Click "Start Recording" to capture audio
+2. Play music or make sounds near your microphone
+3. Click "Stop Recording" when finished
+4. View your audio analysis and cocktail recommendation
+5. Share your results with friends
+
+## Audio Analysis
+
+The application analyzes four key audio features:
+
+- **Energy**: Overall loudness and intensity
+- **Brightness**: Frequency distribution (high vs low frequencies)
+- **Roughness**: Zero crossing rate (harsh vs smooth sounds)
+- **Bass**: Low frequency energy content
+
+These features are mapped to mood clusters:
+- **Energetic & Bright** → Mojito
+- **Heavy & Dark** → Old Fashioned
+- **Chill & Warm** → Whiskey Sour
+- **Aggressive** → Negroni
+- **Balanced** → Gin & Tonic
+
+## Development
+
+### Project Structure
 ```
-SPOTIFY_CLIENT_ID=your_spotify_client_id
-SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
-SPOTIFY_REDIRECT_URI=http://localhost:3001/auth/spotify/callback
-NODE_ENV=development
-PORT=3001
-CORS_ORIGIN=http://localhost:5173
+sonic-mixologist/
+├── client/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   └── ...
+│   └── package.json
+└── server/ (optional)
+    ├── server.js
+    └── package.json
 ```
 
-## API Endpoints
+### Available Scripts
 
-- `GET /api/auth/spotify` - Initiate Spotify OAuth
-- `GET /api/auth/spotify/callback` - OAuth callback
-- `GET /api/song?query=<song_name>` - Get song audio features
-- `GET /api/recommend?query=<song_name>` - Get drink recommendation
+#### Client
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
 
-## Deployment
+#### Server (Optional)
+- `npm run dev` - Start server with nodemon
+- `npm run start` - Start production server
 
-### Frontend (Vercel)
-1. Connect repository to Vercel
-2. Set `VITE_API_URL` environment variable
-3. Deploy automatically on push to main
+## Contributing
 
-### Backend (Render)
-1. Connect repository to Render
-2. Set all environment variables
-3. Deploy automatically on push to main
-
-## Translation Logic
-
-The translation engine uses a weighted scoring system:
-- Energy (40%): High energy → Bold & Bitter
-- Valence (40%): High valence → Sweet & Light
-- Tempo (10%): Fast tempo → Effervescent & Refreshing
-- Acousticness (10%): High acousticness → Creamy & Smooth
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ## License
 
-MIT
+MIT License - see LICENSE file for details
+
+## Disclaimer
+
+This application is for educational and entertainment purposes only.
+Please drink responsibly and never drink and drive.

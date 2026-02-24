@@ -1,7 +1,7 @@
 {
   "name": "sonic-mixologist-server",
   "version": "1.0.0",
-  "description": "Backend for Sonic Mixologist - Spotify to cocktail recommendation engine",
+  "description": "Optional backend for Sonic Mixologist - Audio-only architecture",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -12,20 +12,16 @@
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "axios": "^1.6.0",
-    "node-cache": "^5.1.2",
-    "express-rate-limit": "^7.1.5",
     "helmet": "^7.1.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
   "keywords": [
-    "spotify",
+    "audio",
     "cocktails",
     "recommendation",
-    "api"
+    "client-side"
   ],
   "author": "Sonic Mixologist Team",
   "license": "MIT"
