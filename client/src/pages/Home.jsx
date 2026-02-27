@@ -6,6 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import AudioRecorder from "../components/AudioRecorder";
 import { fft } from "fft-js";
 import { util as fftUtil } from "fft-js";
+import { drinks } from "../data/drinks";
 
 const Home = () => {
   const navigate = useNavigate()
@@ -74,116 +75,213 @@ const Home = () => {
 
                       const channelData = audioBuffer.getChannelData(0);
 
-                      // RMS Energy
-                      let sum = 0;
-                      for (let i = 0; i < channelData.length; i++) {
-                        sum += channelData[i] * channelData[i];
-                      }
-                      const rms = Math.sqrt(sum / channelData.length);
+                      // ===== FRAME-BASED AUDIO FEATURE EXTRACTION =====
 
-                      // Zero Crossing Rate
-                      let zeroCrossings = 0;
-                      for (let i = 1; i < channelData.length; i++) {
-                        if (
-                          (channelData[i - 1] >= 0 && channelData[i] < 0) ||
-                          (channelData[i - 1] < 0 && channelData[i] >= 0)
-                        ) {
-                          zeroCrossings++;
-                        }
-                      }
-                      const zcr = zeroCrossings / channelData.length;
-
-                      // Spectral Centroid + Bass
                       const fftSize = 2048;
                       const sampleRate = audioBuffer.sampleRate;
                       const frequencyPerBin = sampleRate / fftSize;
 
-                      let centroidSum = 0;
-                      let windowCount = 0;
-                      let bassSum = 0;
+                      const energyFrames = [];
+                      const zcrFrames = [];
+                      const centroidFrames = [];
+                      const bassFrames = [];
 
                       for (let start = 0; start < channelData.length - fftSize; start += fftSize) {
-                        const segment = channelData.slice(start, start + fftSize);
+                        let segment = channelData.slice(start, start + fftSize);
 
+                        // Apply Hann Window
+                        for (let i = 0; i < segment.length; i++) {
+                          segment[i] *=
+                            0.5 *
+                            (1 - Math.cos((2 * Math.PI * i) / (segment.length - 1)));
+                        }
+
+                        // ----- RMS (Energy) per frame -----
+                        let frameEnergy = 0;
+                        for (let i = 0; i < segment.length; i++) {
+                          frameEnergy += segment[i] * segment[i];
+                        }
+                        frameEnergy = Math.sqrt(frameEnergy / segment.length);
+                        energyFrames.push(frameEnergy);
+
+                        // ----- Zero Crossing Rate per frame -----
+                        let zeroCrossings = 0;
+                        for (let i = 1; i < segment.length; i++) {
+                          if (
+                            (segment[i - 1] >= 0 && segment[i] < 0) ||
+                            (segment[i - 1] < 0 && segment[i] >= 0)
+                          ) {
+                            zeroCrossings++;
+                          }
+                        }
+                        zcrFrames.push(zeroCrossings / segment.length);
+
+                        // ----- FFT -----
                         const phasors = fft(segment);
                         const magnitudes = fftUtil.fftMag(phasors);
 
                         let numerator = 0;
                         let denominator = 0;
 
+                        let bassEnergy = 0;
+                        let midEnergy = 0;
+                        let highEnergy = 0;
+
                         for (let i = 0; i < magnitudes.length; i++) {
                           const frequency = i * frequencyPerBin;
-                          numerator += frequency * magnitudes[i];
-                          denominator += magnitudes[i];
+                          const magnitude = magnitudes[i];
 
-                          // Bass detection (<200Hz)
+                          numerator += frequency * magnitude;
+                          denominator += magnitude;
+
+                          // Frequency band separation
                           if (frequency < 200) {
-                            bassSum += magnitudes[i];
+                            bassEnergy += magnitude;
+                          } else if (frequency < 2000) {
+                            midEnergy += magnitude;
+                          } else {
+                            highEnergy += magnitude;
                           }
                         }
 
                         if (denominator > 0) {
-                          centroidSum += numerator / denominator;
-                          windowCount++;
+                          const centroid = numerator / denominator;
+                          centroidFrames.push(centroid);
+                        }
+
+                        const totalEnergy = bassEnergy + midEnergy + highEnergy;
+
+                        if (totalEnergy > 0) {
+                          bassFrames.push(bassEnergy / totalEnergy);
                         }
                       }
 
-                      const spectralCentroid =
-                        windowCount > 0 ? centroidSum / windowCount : 0;
+                      // ----- Compute Means -----
+                      const mean = (arr) =>
+                        arr.length > 0
+                          ? arr.reduce((a, b) => a + b, 0) / arr.length
+                          : 0;
 
-                      // Normalize
-                      const normalizedEnergy = Math.min(rms * 10, 1);
-                      const normalizedRoughness = Math.min(zcr * 5, 1);
-                      const normalizedBrightness = Math.min(spectralCentroid / 5000, 1);
-                      const normalizedBass = Math.min(bassSum / 10000, 1);
+                      const energyMean = mean(energyFrames);
+
+                      // ===== Silence Detection =====
+                      // If overall RMS energy is extremely low, treat as no music detected
+                      if (energyMean < 0.01) {
+                        console.warn("Silence or very low audio detected");
+                        setIsProcessing(false);
+                        alert("No significant music detected. Please increase volume or move closer to the speaker.");
+                        return;
+                      }
+
+                      const zcrMean = mean(zcrFrames);
+                      const centroidMean = mean(centroidFrames);
+                      const bassMean = mean(bassFrames);
+                      console.log("Bass Ratio Mean:", bassMean);
+
+                      // ----- Compute Variance (Frame Stability Measure) -----
+                      const variance = (arr) => {
+                        if (arr.length === 0) return 0;
+                        const m = mean(arr);
+                        return arr.reduce((a, b) => a + Math.pow(b - m, 2), 0) / arr.length;
+                      };
+
+                      const energyVariance = variance(energyFrames);
+                      const centroidVariance = variance(centroidFrames);
+
+                      // ----- Normalize (Volume-Independent Energy Scaling) -----
+
+                      // Make energy relative to the loudest frame in this clip
+                      const maxFrameEnergy = Math.max(...energyFrames, 0.00001);
+                      const relativeEnergy = energyMean / maxFrameEnergy;
+
+                      const normalizedEnergy = Math.min(relativeEnergy, 1);
+
+                      // Roughness (ZCR) scaled reasonably
+                      const normalizedRoughness = Math.min(zcrMean * 5, 1);
+
+                      // Brightness scaled to realistic centroid range
+                      const normalizedBrightness = Math.min(centroidMean / 4000, 1);
+
+                      // Bass is already a ratio (0–1), no need to divide again
+                      const normalizedBass = Math.min(bassMean, 1);
 
                       const features = {
                         energy: normalizedEnergy,
                         roughness: normalizedRoughness,
                         brightness: normalizedBrightness,
-                        bass: normalizedBass
+                        bass: normalizedBass,
+                        energyVariance,
+                        brightnessVariance: centroidVariance
                       };
 
                       setAudioFeatures(features);
 
-                      // Mood Logic
-                      let mood = "Balanced";
+                      // ===== Weighted Mood Classification Engine (Gated Version) =====
 
-                      if (normalizedEnergy > 0.7 && normalizedBrightness > 0.6) {
-                        mood = "Energetic & Bright";
-                      } else if (normalizedEnergy > 0.6 && normalizedBrightness < 0.4) {
-                        mood = "Heavy & Dark";
-                      } else if (normalizedEnergy < 0.4 && normalizedBrightness < 0.4) {
-                        mood = "Chill & Warm";
-                      } else if (normalizedRoughness > 0.6) {
-                        mood = "Aggressive";
-                      }
+                      // Gate chill so it only activates for truly low energy tracks
+                      const chillBase =
+                        normalizedEnergy < 0.4
+                          ? (1 - normalizedEnergy) * 0.6 +
+                            (1 - normalizedRoughness) * 0.25 +
+                            (1 - energyVariance) * 0.15
+                          : 0;
 
-                      const moodToDrinkMap = {
-                        "Energetic & Bright": "Mojito",
-                        "Heavy & Dark": "Old Fashioned",
-                        "Chill & Warm": "Whiskey Sour",
-                        "Aggressive": "Negroni",
-                        "Balanced": "Gin & Tonic"
+                      const moodScores = {
+                        energetic:
+                          normalizedEnergy * 0.5 +
+                          normalizedBrightness * 0.3 +
+                          energyVariance * 0.2,
+
+                        dark:
+                          normalizedEnergy * 0.35 +
+                          (1 - normalizedBrightness) * 0.4 +
+                          normalizedBass * 0.25,
+
+                        chill: chillBase,
+
+                        aggressive:
+                          normalizedRoughness * 0.45 +
+                          normalizedEnergy * 0.35 +
+                          energyVariance * 0.2
                       };
 
-                      const recommendedDrink = moodToDrinkMap[mood];
+                      // Sort moods by score (highest first)
+                      const sortedMoods = Object.entries(moodScores).sort(
+                        (a, b) => b[1] - a[1]
+                      );
+
+                      const [topMood, topScore] = sortedMoods[0];
+                      const [, secondScore] = sortedMoods[1];
+
+                      // Confidence = difference between top two scores
+                      const confidence = topScore - secondScore;
+
+                      // Lookup drink from structured dataset
+                      const recommendedDrink = drinks.find(d =>
+                        d.moodAffinity.includes(topMood)
+                      );
 
                       setDetectedMood({
-                        mood,
-                        drink: recommendedDrink
+                        mood: topMood,
+                        confidence
                       });
 
                       // Navigate to results page with the analysis data
 setTimeout(() => {
   setIsProcessing(false);
-  navigate('/results', { 
-    state: { 
+
+  navigate('/results', {
+    state: {
       audioFeatures: features,
-      detectedMood: { mood, drink: recommendedDrink },
+      detectedMood: {
+        mood: topMood,
+        confidence
+      },
+      drink: recommendedDrink,
       fromAudioRecording: true
-    } 
+    }
   });
+
 }, 1000);
                       
                     } catch (error) {
