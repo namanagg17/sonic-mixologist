@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import AgeGate from './pages/AgeGate'
 import Home from './pages/Home'
 import Results from './pages/Results'
+import About from './pages/About'
+import HowItWorks from './pages/HowItWorks'
 import Layout from './components/Layout'
 
 function App() {
@@ -34,6 +36,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/results" element={<Results />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/how-it-works" element={<HowItWorks />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

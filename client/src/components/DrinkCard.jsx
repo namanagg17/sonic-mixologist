@@ -17,9 +17,18 @@ const DrinkCard = ({ drink }) => {
   const [showFullInstructions, setShowFullInstructions] = useState(false)
   const [copied, setCopied] = useState(false)
 
+  // Safety guard
+  if (!drink) {
+    return (
+      <div className="glass-card p-6 text-center">
+        <p className="text-gray-400">No drink recommendation available</p>
+      </div>
+    )
+  }
+
   const handleCopyInstructions = async () => {
-    const instructions = `${drink.name}\n\nIngredients:\n${drink.ingredients.map((ing, i) => 
-      `${drink.measurements[i] || ''} ${ing}`
+    const instructions = `${drink.name}\n\nIngredients:\n${drink.ingredients.map((ing) => 
+      `${ing.amount} ${ing.name}`
     ).join('\n')}\n\nInstructions:\n${drink.instructions}`
     
     try {
@@ -159,8 +168,7 @@ const DrinkCard = ({ drink }) => {
               <div key={index} className="flex items-center space-x-2 text-sm">
                 <div className="w-2 h-2 bg-cocktail-gold rounded-full" />
                 <span className="text-gray-300">
-                  {drink.measurements?.[index] && `${drink.measurements[index]} `}
-                  {ingredient}
+                  {ingredient.amount} {ingredient.name}
                 </span>
               </div>
             ))}

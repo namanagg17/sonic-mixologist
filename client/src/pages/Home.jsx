@@ -190,11 +190,9 @@ const Home = () => {
 
                       // ----- Normalize (Volume-Independent Energy Scaling) -----
 
-                      // Make energy relative to the loudest frame in this clip
-                      const maxFrameEnergy = Math.max(...energyFrames, 0.00001);
-                      const relativeEnergy = energyMean / maxFrameEnergy;
-
-                      const normalizedEnergy = Math.min(relativeEnergy, 1);
+                      const maxEnergy = Math.max(...energyFrames);
+                      const relativeEnergy = maxEnergy > 0 ? energyMean / maxEnergy : 0;
+                      const normalizedEnergy = Math.min(relativeEnergy * 1.5, 1);
 
                       // Roughness (ZCR) scaled reasonably
                       const normalizedRoughness = Math.min(zcrMean * 5, 1);
@@ -210,39 +208,93 @@ const Home = () => {
                         roughness: normalizedRoughness,
                         brightness: normalizedBrightness,
                         bass: normalizedBass,
+                        dynamicRange: Math.min(Math.max(...energyFrames) - Math.min(...energyFrames), 1),
                         energyVariance,
                         brightnessVariance: centroidVariance
                       };
 
+                      // ===== Audio Explanation Engine =====
+                      function generateAudioExplanation(features, mood) {
+                        const reasons = [];
+
+                        if (mood === "chill") {
+                          if (features.energy < 0.35)
+                            reasons.push("Low energy levels suggesting a calmer track");
+
+                          if (features.roughness < 0.3)
+                            reasons.push("Smooth audio texture with minimal transients");
+
+                          if (features.dynamicRange < 0.35)
+                            reasons.push("Stable dynamics indicating a relaxed sound profile");
+                        }
+
+                        if (mood === "dark") {
+                          if (features.brightness < 0.35)
+                            reasons.push("Low brightness indicating darker tonal characteristics");
+
+                          if (features.bass > 0.4)
+                            reasons.push("Strong bass frequencies detected");
+
+                          if (features.dynamicRange > 0.35)
+                            reasons.push("Moderate dynamic shifts contributing to a darker atmosphere");
+                        }
+
+                        if (mood === "energetic") {
+                          if (features.energy > 0.55)
+                            reasons.push("High energy detected in the audio");
+
+                          if (features.brightness > 0.5)
+                            reasons.push("Bright high-frequency content detected");
+
+                          if (features.dynamicRange > 0.45)
+                            reasons.push("Dynamic changes indicating an energetic track");
+                        }
+
+                        if (mood === "aggressive") {
+                          if (features.roughness > 0.45)
+                            reasons.push("High roughness suggesting aggressive transients");
+
+                          if (features.dynamicRange > 0.5)
+                            reasons.push("Strong dynamic range indicating punchy audio changes");
+
+                          if (features.energy > 0.5)
+                            reasons.push("Elevated energy levels detected");
+                        }
+
+                        return reasons;
+                      }
+
                       setAudioFeatures(features);
 
-                      // ===== Weighted Mood Classification Engine (Gated Version) =====
+                      // ===== Weighted Mood Classification Engine =====
 
-                      // Gate chill so it only activates for truly low energy tracks
-                      const chillBase =
-                        normalizedEnergy < 0.4
-                          ? (1 - normalizedEnergy) * 0.6 +
-                            (1 - normalizedRoughness) * 0.25 +
-                            (1 - energyVariance) * 0.15
-                          : 0;
+                      const normalizedDynamicRange = features.dynamicRange;
 
                       const moodScores = {
                         energetic:
-                          normalizedEnergy * 0.5 +
-                          normalizedBrightness * 0.3 +
-                          energyVariance * 0.2,
+                          normalizedEnergy * 0.40 +
+                          normalizedBrightness * 0.30 +
+                          normalizedDynamicRange * 0.20 +
+                          energyVariance * 0.10,
 
                         dark:
-                          normalizedEnergy * 0.35 +
-                          (1 - normalizedBrightness) * 0.4 +
-                          normalizedBass * 0.25,
-
-                        chill: chillBase,
+                          normalizedBass * 0.45 +
+                          (1 - normalizedBrightness) * 0.35 +
+                          normalizedEnergy * 0.10 +
+                          normalizedDynamicRange * 0.10,
 
                         aggressive:
-                          normalizedRoughness * 0.45 +
-                          normalizedEnergy * 0.35 +
-                          energyVariance * 0.2
+                          normalizedBass * 0.50 +
+                          normalizedRoughness * 0.20 +
+                          normalizedDynamicRange * 0.20 +
+                          normalizedEnergy * 0.10,
+
+                        chill:
+                          normalizedEnergy < 0.35
+                            ? (1 - normalizedEnergy) * 0.55 +
+                              (1 - normalizedBass) * 0.25 +
+                              (1 - normalizedRoughness) * 0.20
+                            : 0
                       };
 
                       // Sort moods by score (highest first)
@@ -256,10 +308,15 @@ const Home = () => {
                       // Confidence = difference between top two scores
                       const confidence = topScore - secondScore;
 
-                      // Lookup drink from structured dataset
-                      const recommendedDrink = drinks.find(d =>
+                      // Lookup drink from structured dataset (random selection)
+                      const matchingDrinks = drinks.filter(d =>
                         d.moodAffinity.includes(topMood)
                       );
+
+                      const recommendedDrink =
+                        matchingDrinks[Math.floor(Math.random() * matchingDrinks.length)];
+
+                      const explanation = generateAudioExplanation(features, topMood);
 
                       setDetectedMood({
                         mood: topMood,
@@ -278,6 +335,7 @@ setTimeout(() => {
         confidence
       },
       drink: recommendedDrink,
+      explanation: explanation,
       fromAudioRecording: true
     }
   });

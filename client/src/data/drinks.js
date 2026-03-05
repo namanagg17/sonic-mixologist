@@ -19,7 +19,7 @@ export const drinks = [
     instructions: "Muddle mint leaves with simple syrup and lime juice. Add rum and fill glass with crushed ice. Top with soda water and stir gently. Garnish with mint sprig.",
     glass: "Highball",
     garnish: "Mint sprig",
-    image: "/images/mojito.jpg"
+    image: "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg"
   },
   {
     id: "old-fashioned",
@@ -41,7 +41,7 @@ export const drinks = [
     instructions: "Muddle sugar cube with bitters and water. Add whiskey and large ice cube. Stir until chilled. Express orange peel oils over drink and drop in peel.",
     glass: "Rocks glass",
     garnish: "Orange peel",
-    image: "/images/old-fashioned.jpg"
+    image: "https://www.thecocktaildb.com/images/media/drink/vrwquq1478252802.jpg"
   },
   {
     id: "negroni",
@@ -62,7 +62,7 @@ export const drinks = [
     instructions: "Combine gin, Campari, and sweet vermouth in mixing glass with ice. Stir until well-chilled. Strain into rocks glass over fresh ice. Express orange peel oils over drink.",
     glass: "Rocks glass",
     garnish: "Orange peel",
-    image: "/images/negroni.jpg"
+    image: "https://www.thecocktaildb.com/images/media/drink/qgdu971561574065.jpg"
   },
   {
     id: "whiskey-sour",
@@ -83,7 +83,7 @@ export const drinks = [
     instructions: "Dry shake all ingredients without ice if using egg white. Then shake with ice. Strain into coupe glass. Garnish with cherry and orange slice.",
     glass: "Coupe",
     garnish: "Cherry and orange slice",
-    image: "/images/whiskey-sour.jpg"
+    image: "https://www.thecocktaildb.com/images/media/drink/hbkfsh1589574990.jpg"
   },
   {
     id: "margarita",
@@ -104,7 +104,7 @@ export const drinks = [
     instructions: "Run lime wedge around rim of glass and dip in salt. Shake tequila, lime juice, and Cointreau with ice. Strain into glass with fresh ice.",
     glass: "Margarita or coupe",
     garnish: "Lime wheel",
-    image: "/images/margarita.jpg"
+    image: "https://www.thecocktaildb.com/images/media/drink/5noda61589575158.jpg"
   },
   {
     id: "martini",
@@ -124,6 +124,6 @@ export const drinks = [
     instructions: "Stir gin and vermouth with ice until very cold. Strain into chilled coupe or martini glass. Garnish with lemon twist or olive.",
     glass: "Coupe or martini glass",
     garnish: "Lemon twist or olive",
-    image: "/images/martini.jpg"
+    image: "https://www.thecocktaildb.com/images/media/drink/71t8581504353095.jpg"
   }
 ];
