@@ -17,6 +17,7 @@ const Results = () => {
   const audioFeatures = location.state?.audioFeatures
   const detectedMood = location.state?.detectedMood
   const drink = location.state?.drink
+  const drinkMatchScore = location.state?.drinkMatchScore
   const explanation = location.state?.explanation
   const fromAudioRecording = location.state?.fromAudioRecording
 
@@ -59,8 +60,8 @@ const Results = () => {
           <h1 className="text-4xl font-cocktail text-cocktail-gradient">
             Audio Analysis Results
           </h1>
-          <p className="text-gray-300 text-lg mt-2">
-            Mood: {detectedMood.mood}
+          <p className="text-gray-300 text-lg mt-2 capitalize">
+            Mood: <span className="text-cocktail-gold font-semibold">{detectedMood.mood}</span>
           </p>
         </div>
 
@@ -76,21 +77,59 @@ const Results = () => {
 
             <AudioFeatureDisplay features={{
               energy: audioFeatures.energy,
-              valence: audioFeatures.energy, // Using energy as valence proxy
-              tempo: 120, // Default tempo
-              acousticness: 1 - audioFeatures.energy // Inverse energy as acousticness
+              brightness: audioFeatures.brightness,
+              roughness: audioFeatures.roughness,
+              bass: audioFeatures.bass,
+              spectralFlux: audioFeatures.spectralFlux ?? 0,
+              bpm: audioFeatures.bpm ?? 120
             }} />
 
             <div className="mt-6">
-              <p className="text-cocktail-gold font-medium">
-                Detected Mood
-              </p>
-              <p className="text-white text-lg">
+              <p className="text-cocktail-gold font-medium mb-2">Detected Mood</p>
+
+              <p className="text-white text-2xl font-semibold capitalize mb-1">
                 {detectedMood.mood}
               </p>
-              <p className="text-gray-400 text-sm">
-                Based on audio analysis
-              </p>
+
+              {detectedMood.confidence != null && (
+                <div className="mb-4">
+                  <p className="text-gray-400 text-xs mb-1">
+                    Confidence: {(detectedMood.confidence * 100).toFixed(1)}%
+                  </p>
+                  <div className="w-full bg-white/10 rounded-full h-2">
+                    <div
+                      className="bg-cocktail-gold h-2 rounded-full transition-all"
+                      style={{ width: `${Math.min(detectedMood.confidence * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {detectedMood.scores && (
+                <div className="space-y-2">
+                  <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">All mood scores</p>
+                  {Object.entries(detectedMood.scores)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([mood, score]) => (
+                      <div key={mood}>
+                        <div className="flex justify-between text-xs mb-0.5">
+                          <span className="text-gray-300 capitalize">{mood}</span>
+                          <span className="text-gray-400">{(score * 100).toFixed(1)}%</span>
+                        </div>
+                        <div className="w-full bg-white/10 rounded-full h-1.5">
+                          <div
+                            className={`h-1.5 rounded-full transition-all ${
+                              mood === detectedMood.mood
+                                ? 'bg-cocktail-gold'
+                                : 'bg-white/30'
+                            }`}
+                            style={{ width: `${Math.min(score * 100, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
 
             {explanation && explanation.length > 0 && (
@@ -107,7 +146,7 @@ const Results = () => {
 
           {/* Drink Section */}
           <div className="glass-card p-6">
-            <DrinkCard drink={drink} />
+            <DrinkCard drink={drink} matchScore={drinkMatchScore} />
           </div>
 
         </div>

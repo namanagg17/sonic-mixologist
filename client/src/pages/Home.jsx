@@ -1,3 +1,4 @@
+import { runYamnet } from "../ml/yamnet";
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -6,7 +7,8 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import AudioRecorder from "../components/AudioRecorder";
 import { fft } from "fft-js";
 import { util as fftUtil } from "fft-js";
-import { drinks } from "../data/drinks";
+import { cocktails as drinks } from "../data/cocktailDataset";
+import { detectMoodFromEmbedding } from "../ml/moodClassifier";
 
 const Home = () => {
   const navigate = useNavigate()
@@ -72,6 +74,9 @@ const Home = () => {
                       const arrayBuffer = await blob.arrayBuffer();
                       const audioContext = new AudioContext();
                       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                      const embedding = await runYamnet(audioBuffer);
+
+const moodPrediction = detectMoodFromEmbedding(embedding);
 
                       const channelData = audioBuffer.getChannelData(0);
 
@@ -85,6 +90,10 @@ const Home = () => {
                       const zcrFrames = [];
                       const centroidFrames = [];
                       const bassFrames = [];
+
+                      // ----- Spectral Flux accumulators -----
+                      let spectralFluxSum = 0;
+                      let previousMagnitudes = null;
 
                       for (let start = 0; start < channelData.length - fftSize; start += fftSize) {
                         let segment = channelData.slice(start, start + fftSize);
@@ -119,6 +128,17 @@ const Home = () => {
                         // ----- FFT -----
                         const phasors = fft(segment);
                         const magnitudes = fftUtil.fftMag(phasors);
+
+                        // ----- Spectral Flux -----
+                        if (previousMagnitudes) {
+                          let flux = 0;
+                          for (let i = 0; i < magnitudes.length; i++) {
+                            const diff = magnitudes[i] - previousMagnitudes[i];
+                            if (diff > 0) flux += diff;
+                          }
+                          spectralFluxSum += flux;
+                        }
+                        previousMagnitudes = magnitudes;
 
                         let numerator = 0;
                         let denominator = 0;
@@ -156,6 +176,52 @@ const Home = () => {
                         }
                       }
 
+                      // ----- BPM via Autocorrelation on Onset Envelope -----
+
+                      // Half-wave rectified energy difference = onset envelope
+                      const onsetEnvelope = [];
+                      for (let i = 1; i < energyFrames.length; i++) {
+                        const diff = energyFrames[i] - energyFrames[i - 1];
+                        onsetEnvelope.push(Math.max(diff, 0));
+                      }
+
+                      function autocorrelate(buffer) {
+                        const result = new Array(buffer.length).fill(0);
+                        for (let lag = 0; lag < buffer.length; lag++) {
+                          for (let i = 0; i < buffer.length - lag; i++) {
+                            result[lag] += buffer[i] * buffer[i + lag];
+                          }
+                        }
+                        return result;
+                      }
+
+                      // Each frame = fftSize samples; frameTime in seconds
+                      const frameTime = fftSize / sampleRate;
+
+                      // Convert lag bounds (0.3 s – 2 s) to frame indices
+                      const minLag = Math.ceil(0.3 / frameTime);
+                      const maxLag = Math.floor(2.0 / frameTime);
+
+                      let bpm = 120; // sensible default
+
+                      if (onsetEnvelope.length > maxLag) {
+                        const ac = autocorrelate(onsetEnvelope);
+
+                        let bestLag = minLag;
+                        let bestVal = -Infinity;
+
+                        for (let lag = minLag; lag <= Math.min(maxLag, ac.length - 1); lag++) {
+                          if (ac[lag] > bestVal) {
+                            bestVal = ac[lag];
+                            bestLag = lag;
+                          }
+                        }
+
+                        const period = bestLag * frameTime; // seconds per beat
+                        const rawBPM = 60 / period;
+                        bpm = Math.min(Math.max(Math.round(rawBPM), 60), 180);
+                      }
+
                       // ----- Compute Means -----
                       const mean = (arr) =>
                         arr.length > 0
@@ -176,7 +242,6 @@ const Home = () => {
                       const zcrMean = mean(zcrFrames);
                       const centroidMean = mean(centroidFrames);
                       const bassMean = mean(bassFrames);
-                      console.log("Bass Ratio Mean:", bassMean);
 
                       // ----- Compute Variance (Frame Stability Measure) -----
                       const variance = (arr) => {
@@ -203,6 +268,10 @@ const Home = () => {
                       // Bass is already a ratio (0–1), no need to divide again
                       const normalizedBass = Math.min(bassMean, 1);
 
+                      // ----- Spectral Flux (average + normalize) -----
+                      const spectralFlux = spectralFluxSum / (energyFrames.length || 1);
+                      const normalizedFlux = Math.min(spectralFlux / 500, 1);
+
                       const features = {
                         energy: normalizedEnergy,
                         roughness: normalizedRoughness,
@@ -210,7 +279,9 @@ const Home = () => {
                         bass: normalizedBass,
                         dynamicRange: Math.min(Math.max(...energyFrames) - Math.min(...energyFrames), 1),
                         energyVariance,
-                        brightnessVariance: centroidVariance
+                        brightnessVariance: centroidVariance,
+                        spectralFlux: normalizedFlux,
+                        bpm
                       };
 
                       // ===== Audio Explanation Engine =====
@@ -259,6 +330,22 @@ const Home = () => {
 
                           if (features.energy > 0.5)
                             reasons.push("Elevated energy levels detected");
+
+                          if (features.spectralFlux > 0.4)
+                            reasons.push("High spectral flux indicating rapid tonal changes and distortion");
+
+                          if (features.bpm > 130)
+                            reasons.push(`Fast tempo of ${features.bpm} BPM reinforcing aggressive intensity`);
+                        }
+
+                        if (mood === "energetic") {
+                          if (features.bpm > 100 && features.bpm <= 130)
+                            reasons.push(`Upbeat tempo of ${features.bpm} BPM driving energetic feel`);
+                        }
+
+                        if (mood === "chill") {
+                          if (features.bpm < 80)
+                            reasons.push(`Slow tempo of ${features.bpm} BPM reinforcing a relaxed vibe`);
                         }
 
                         return reasons;
@@ -266,81 +353,79 @@ const Home = () => {
 
                       setAudioFeatures(features);
 
-                      // ===== Weighted Mood Classification Engine =====
+                      // ===== YAMNet Prototype Classifier (authoritative mood) =====
+                      const { mood: finalMood, confidence: moodConfidence, scores: moodScores } = moodPrediction;
 
-                      const normalizedDynamicRange = features.dynamicRange;
+                      // ----- BPM score boosts (applied on top of cosine scores) -----
+                      if (bpm > 130)        moodScores.aggressive = (moodScores.aggressive ?? 0) + 0.20;
+                      if (bpm > 100 && bpm <= 130) moodScores.energetic  = (moodScores.energetic  ?? 0) + 0.15;
+                      if (bpm < 80)         moodScores.chill      = (moodScores.chill      ?? 0) + 0.15;
 
-                      const moodScores = {
-                        energetic:
-                          normalizedEnergy * 0.40 +
-                          normalizedBrightness * 0.30 +
-                          normalizedDynamicRange * 0.20 +
-                          energyVariance * 0.10,
+                      // Re-pick winner after boost
+                      const boostedMood = Object.entries(moodScores)
+                        .sort((a, b) => b[1] - a[1])[0][0];
 
-                        dark:
-                          normalizedBass * 0.45 +
-                          (1 - normalizedBrightness) * 0.35 +
-                          normalizedEnergy * 0.10 +
-                          normalizedDynamicRange * 0.10,
+                      // Map audio features to a flavor vector
+                      function mapAudioToFlavor(f) {
+                        return {
+                          sweetness:  Math.max(0, 1 - f.brightness),
+                          bitterness: f.bass,
+                          strength:   f.energy,
+                          freshness:  Math.min(Math.max((f.bpm - 60) / 120, 0), 1)
+                        };
+                      }
 
-                        aggressive:
-                          normalizedBass * 0.50 +
-                          normalizedRoughness * 0.20 +
-                          normalizedDynamicRange * 0.20 +
-                          normalizedEnergy * 0.10,
+                      // Cosine similarity between two flavor objects
+                      function computeDrinkSimilarity(audioFlavor, drinkFlavor) {
+                        const keys = ['sweetness', 'bitterness', 'strength', 'freshness'];
+                        let dot = 0, magA = 0, magB = 0;
+                        for (const k of keys) {
+                          dot  += audioFlavor[k] * drinkFlavor[k];
+                          magA += audioFlavor[k] ** 2;
+                          magB += drinkFlavor[k] ** 2;
+                        }
+                        const denom = Math.sqrt(magA) * Math.sqrt(magB);
+                        return denom === 0 ? 0 : dot / denom;
+                      }
 
-                        chill:
-                          normalizedEnergy < 0.35
-                            ? (1 - normalizedEnergy) * 0.55 +
-                              (1 - normalizedBass) * 0.25 +
-                              (1 - normalizedRoughness) * 0.20
-                            : 0
-                      };
+                      // Pick best-matching drink via flavor similarity
+                      const audioFlavor = mapAudioToFlavor(features);
+                      let bestDrink = null;
+                      let bestScore = -Infinity;
+                      for (const d of drinks) {
+                        if (!d.flavorProfile) continue;
+                        const score = computeDrinkSimilarity(audioFlavor, d.flavorProfile);
+                        if (score > bestScore) { bestScore = score; bestDrink = d; }
+                      }
+                      const recommendedDrink = bestDrink;
+                      const drinkMatchScore = (bestScore + 1) / 2;
 
-                      // Sort moods by score (highest first)
-                      const sortedMoods = Object.entries(moodScores).sort(
-                        (a, b) => b[1] - a[1]
-                      );
-
-                      const [topMood, topScore] = sortedMoods[0];
-                      const [, secondScore] = sortedMoods[1];
-
-                      // Confidence = difference between top two scores
-                      const confidence = topScore - secondScore;
-
-                      // Lookup drink from structured dataset (random selection)
-                      const matchingDrinks = drinks.filter(d =>
-                        d.moodAffinity.includes(topMood)
-                      );
-
-                      const recommendedDrink =
-                        matchingDrinks[Math.floor(Math.random() * matchingDrinks.length)];
-
-                      const explanation = generateAudioExplanation(features, topMood);
+                      const explanation = generateAudioExplanation(features, boostedMood);
 
                       setDetectedMood({
-                        mood: topMood,
-                        confidence
+                        mood: boostedMood,
+                        confidence: moodConfidence
                       });
 
                       // Navigate to results page with the analysis data
-setTimeout(() => {
-  setIsProcessing(false);
+                      setTimeout(() => {
+                        setIsProcessing(false);
 
-  navigate('/results', {
-    state: {
-      audioFeatures: features,
-      detectedMood: {
-        mood: topMood,
-        confidence
-      },
-      drink: recommendedDrink,
-      explanation: explanation,
-      fromAudioRecording: true
-    }
-  });
-
-}, 1000);
+                        navigate('/results', {
+                          state: {
+                            audioFeatures: features,
+                            detectedMood: {
+                              mood: boostedMood,
+                              confidence: moodConfidence,
+                              scores: moodScores
+                            },
+                            drink: recommendedDrink,
+                            drinkMatchScore: drinkMatchScore,
+                            explanation: explanation,
+                            fromAudioRecording: true
+                          }
+                        });
+                      }, 1000);
                       
                     } catch (error) {
                       console.error('Audio processing error:', error);

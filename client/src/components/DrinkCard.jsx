@@ -13,7 +13,7 @@ import {
   Check
 } from 'lucide-react'
 
-const DrinkCard = ({ drink }) => {
+const DrinkCard = ({ drink, matchScore }) => {
   const [showFullInstructions, setShowFullInstructions] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -89,22 +89,14 @@ const DrinkCard = ({ drink }) => {
     >
       {/* Drink Image */}
       <div className="relative h-48 overflow-hidden">
-        {drink.image ? (
-          <img
-            src={drink.image}
-            alt={drink.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-cocktail-gold/20 to-cocktail-amber/20 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-2 bg-cocktail-gold/20 rounded-full flex items-center justify-center">
-                <Glasses className="w-8 h-8 text-cocktail-gold" />
-              </div>
-              <p className="text-cocktail-gold text-sm">No Image Available</p>
-            </div>
-          </div>
-        )}
+        <img
+          src={drink.image}
+          alt={drink.name}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          onError={(e) => {
+            e.target.src = "https://www.thecocktaildb.com/images/media/drink/wyrrwv1441207432.jpg";
+          }}
+        />
         
         {/* Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -220,8 +212,16 @@ const DrinkCard = ({ drink }) => {
         <div className="flex items-center justify-between pt-4 border-t border-cocktail-gold/20">
           <div className="flex items-center space-x-2">
             <Heart className="w-4 h-4 text-cocktail-rose" />
-            <span className="text-xs text-gray-400">Perfect Match</span>
+            <span className="text-xs text-gray-400">Flavor Match</span>
           </div>
+          {matchScore != null && (
+            <div className="flex items-center space-x-1">
+              <span className="text-xs text-gray-400">Match Score:</span>
+              <span className="text-sm font-semibold text-cocktail-gold">
+                {Math.round(matchScore * 100)}%
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </motion.div>
