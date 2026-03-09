@@ -1,160 +1,126 @@
 # Sonic Mixologist 🎵🍸
 
-## Overview
+A browser-based application that listens to music through your microphone, analyzes its acoustic characteristics using DSP and a YAMNet neural network, detects the mood, and recommends a cocktail whose flavor profile matches the sound.
 
-Sonic Mixologist is a browser-based audio analysis application that:
-1. Records live microphone input
-2. Extracts audio features using FFT
-3. Detects mood using weighted scoring
-4. Recommends a cocktail based on audio characteristics
+All processing happens locally in the browser — no audio is uploaded.
 
-No external APIs are used.
+## How It Works
+
+```
+Microphone → DSP Feature Extraction → YAMNet Embedding → Mood Classification → Flavor Matching → Cocktail
+```
+
+1. **Audio Capture** — Records 5 seconds via the Web Audio API and MediaRecorder.
+2. **DSP Analysis** — Frame-based FFT (2048-sample Hann-windowed frames) extracts:
+   - RMS Energy (loudness)
+   - Spectral Centroid (brightness)
+   - Zero Crossing Rate (roughness)
+   - Bass Ratio (low-frequency energy < 200 Hz)
+   - Spectral Flux (timbral change between frames)
+   - BPM (autocorrelation of onset envelope, clamped 60–180)
+   - Dynamic Range, Energy Variance
+3. **YAMNet Embedding** — Audio is passed through Google's YAMNet model (loaded via TensorFlow.js) producing 1024-dimensional frame embeddings, which are mean-pooled into a single vector.
+4. **Mood Detection** — Cosine similarity is computed against pre-computed mood prototype centroids (aggressive, energetic, chill, dark), each built from 5 reference songs. BPM-based boosts refine the final classification.
+5. **Cocktail Recommendation** — DSP features are mapped to a 4D flavor vector (sweetness, bitterness, strength, freshness) and matched against 47 cocktails via cosine similarity.
+6. **Explanation Engine** — Rule-based reasoning generates human-readable explanations for why a mood was detected.
 
 ## Features
 
-- **Short-Time Fourier Transform (FFT)**
-- **RMS Energy Detection**
-- **Zero Crossing Rate (Roughness)**
-- **Spectral Centroid (Brightness)**
-- **Low Frequency Energy (Bass)**
-- **Basic Tempo Estimation**
-- **Weighted Mood Classification**
-- **Confidence Score Calculation**
-- **Fully Client-Side Processing**
-
-## Architecture
-
-```
-Home → Audio Recording → DSP Analysis → Mood Engine → Results
-```
-
-All processing happens in-browser using Web Audio API.
+- **YAMNet neural network** for audio scene classification (TensorFlow.js, in-browser)
+- **Frame-based FFT** with Hann windowing, spectral flux, BPM detection
+- **Mood classification** with cosine similarity against trained prototypes (20 reference songs)
+- **Flavor-based cocktail matching** across 47 drinks with calibrated match scores
+- **Audio explanation engine** — mood-specific reasoning displayed on results
+- **Age verification gate** with localStorage persistence
+- **Responsive UI** with Framer Motion animations and Tailwind CSS
+- **Privacy-first** — all processing happens locally, no audio leaves the device
 
 ## Tech Stack
 
-- **React**
-- **Vite**
-- **Web Audio API**
-- **fft-js**
-- **framer-motion**
-- **lucide-react**
+| Layer | Technology |
+|-------|-----------|
+| Framework | React 18, Vite 5 |
+| Styling | Tailwind CSS 3, Framer Motion |
+| Audio | Web Audio API, fft-js |
+| ML | TensorFlow.js, YAMNet (TFHub graph model) |
+| Icons | Lucide React |
+| Routing | React Router DOM 6 |
 
-## Future Improvements
+## Project Structure
 
-- **MFCC extraction**
-- **Real-time streaming analysis**
-- **K-means clustering**
-- **Machine learning classifier**
-- **BPM refinement**
-
-## Privacy
-
-No audio is uploaded.
-All processing happens locally in browser.
-
-## Quick Start
-
-### Prerequisites
-- Node.js 16+
-- npm or yarn
-
-### Installation
-
-1. Clone the repository
-```bash
-git clone <repository-url>
-cd sonic-mixologist
-```
-
-2. Install dependencies
-```bash
-# Client dependencies
-cd client
-npm install
-
-# Optional server dependencies
-cd ../server
-npm install
-```
-
-3. Start the application
-```bash
-# Client only (recommended)
-cd client
-npm run dev
-
-# Or with optional server
-cd server
-npm run dev
-```
-
-4. Open your browser to `http://localhost:5173`
-
-### Usage
-
-1. Click "Start Recording" to capture audio
-2. Play music or make sounds near your microphone
-3. Click "Stop Recording" when finished
-4. View your audio analysis and cocktail recommendation
-5. Share your results with friends
-
-## Audio Analysis
-
-The application analyzes four key audio features:
-
-- **Energy**: Overall loudness and intensity
-- **Brightness**: Frequency distribution (high vs low frequencies)
-- **Roughness**: Zero crossing rate (harsh vs smooth sounds)
-- **Bass**: Low frequency energy content
-
-These features are mapped to mood clusters:
-- **Energetic & Bright** → Mojito
-- **Heavy & Dark** → Old Fashioned
-- **Chill & Warm** → Whiskey Sour
-- **Aggressive** → Negroni
-- **Balanced** → Gin & Tonic
-
-## Development
-
-### Project Structure
 ```
 sonic-mixologist/
 ├── client/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   └── ...
-│   └── package.json
-└── server/ (optional)
-    ├── server.js
-    └── package.json
+│   └── src/
+│       ├── pages/
+│       │   ├── Home.jsx            # Audio recording + full DSP/ML pipeline
+│       │   ├── Results.jsx         # Mood, explanation, cocktail display
+│       │   ├── About.jsx           # Project overview and tech details
+│       │   ├── HowItWorks.jsx      # Visual pipeline walkthrough
+│       │   └── AgeGate.jsx         # 21+ verification
+│       ├── components/
+│       │   ├── AudioRecorder.jsx   # 5-second MediaRecorder wrapper
+│       │   ├── AudioFeatureDisplay.jsx  # Feature bars + BPM display
+│       │   ├── DrinkCard.jsx       # Cocktail card with ingredients
+│       │   ├── Navbar.jsx          # Navigation
+│       │   ├── Footer.jsx          # Footer with links
+│       │   ├── Layout.jsx          # Page wrapper
+│       │   └── LoadingSpinner.jsx  # Animated loading state
+│       ├── data/
+│       │   └── cocktailDataset.js  # 47 cocktails with flavor profiles
+│       └── ml/
+│           ├── yamnet.js           # YAMNet model loader + inference
+│           ├── moodClassifier.js   # Cosine similarity mood detection
+│           ├── moodPrototypes.js   # 1024-dim prototype embeddings (20 songs)
+│           └── buildPrototypes.js  # Utility for computing new prototypes
+└── server/                         # Optional — health check only
+    └── server.js
 ```
 
-### Available Scripts
+## Quick Start
 
-#### Client
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
+```bash
+# Clone the repository
+git clone https://github.com/namanagg17/sonic-mixologist.git
+cd sonic-mixologist
 
-#### Server (Optional)
-- `npm run dev` - Start server with nodemon
-- `npm run start` - Start production server
+# Install client dependencies
+cd client
+npm install
 
-## Contributing
+# Start the development server
+npm run dev
+```
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+Open `http://localhost:5173` in your browser.
+
+### Requirements
+- Node.js 16+
+- A browser with Web Audio API support (Chrome, Firefox, Safari, Edge)
+- Microphone access
+
+## Mood Prototypes
+
+The classifier uses pre-computed YAMNet embeddings from 20 reference songs (5 per mood):
+
+| Mood | Reference Songs |
+|------|----------------|
+| **Aggressive** | FE!N (Travis Scott), DNA (Kendrick Lamar), Black Skinhead (Kanye West), SICKO MODE (Travis Scott), HUMBLE (Kendrick Lamar) |
+| **Energetic** | Blinding Lights (The Weeknd), Titanium (David Guetta), Don't Start Now (Dua Lipa), Can't Stop (RHCP), Uptown Funk (Bruno Mars) |
+| **Chill** | Perfect (Ed Sheeran), Location (Khalid), Sunset Lover (Petit Biscuit), Pink + White (Frank Ocean), Let Her Go (Passenger) |
+| **Dark** | After Hours (The Weeknd), Royals (Lorde), Bury a Friend (Billie Eilish), Runaway (Kanye West), Lovely (Billie Eilish) |
+
+## Privacy
+
+- No audio is uploaded or stored
+- All DSP and ML inference runs locally in the browser
+- Age verification is stored in localStorage only
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT License
 
 ## Disclaimer
 
 This application is for educational and entertainment purposes only.
-Please drink responsibly and never drink and drive.
+Please drink responsibly.
