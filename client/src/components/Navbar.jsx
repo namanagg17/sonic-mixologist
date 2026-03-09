@@ -54,7 +54,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-4">
             {/* GitHub Link */}
             <a
-              href="https://github.com/yourusername/sonic-mixologist"
+              href="https://github.com/namanagg17/sonic-mixologist"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:flex items-center space-x-2 text-sm text-gray-400 hover:text-cocktail-gold transition-colors"
@@ -103,7 +103,7 @@ const Navbar = () => {
               
               <div className="pt-4 mt-4 border-t border-cocktail-gold/20">
                 <a
-                  href="https://github.com/yourusername/sonic-mixologist"
+                  href="https://github.com/namanagg17/sonic-mixologist"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-400 hover:text-cocktail-gold transition-colors"

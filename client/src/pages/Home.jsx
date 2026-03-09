@@ -2,7 +2,7 @@ import { runYamnet } from "../ml/yamnet";
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Music, Sparkles, TrendingUp,Wine} from 'lucide-react'
+import { Music, Sparkles, Wine} from 'lucide-react'
 import LoadingSpinner from '../components/LoadingSpinner'
 import AudioRecorder from "../components/AudioRecorder";
 import { fft } from "fft-js";
@@ -19,7 +19,7 @@ const Home = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 px-4">
+      <section className="relative overflow-hidden min-h-screen flex items-center justify-center px-4">
         <div className="absolute inset-0 bg-gradient-to-br from-cocktail-gold/10 via-transparent to-cocktail-purple/10" />
         
         <div className="max-w-4xl mx-auto text-center relative z-10">
@@ -459,62 +459,6 @@ const moodPrediction = detectMoodFromEmbedding(embedding);
         {/* Background decorations */}
         <div className="absolute top-10 left-10 w-32 h-32 bg-cocktail-gold/5 rounded-full blur-3xl" />
         <div className="absolute bottom-10 right-10 w-40 h-40 bg-cocktail-amber/5 rounded-full blur-3xl" />
-      </section>
-
-      {/* Features Section */}
-      <section id="how-it-works" className="py-20 px-4 bg-cocktail-darker/50">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl font-cocktail text-cocktail-gradient mb-4">
-              How It Works
-            </h2>
-            <p className="text-gray-400 text-lg">
-              Discover the science behind sonic mixology
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: TrendingUp,
-                title: 'Audio Analysis',
-                description: 'Our AI analyzes energy, valence, tempo, and acousticness to understand the song\'s mood.',
-                color: 'cocktail-purple'
-              },
-              {
-                icon: Wine,
-                title: 'Perfect Match',
-                description: 'We translate the audio profile into a mood cluster and recommend the perfect cocktail.',
-                color: 'cocktail-gold'
-              }
-            ].map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.6 }}
-                viewport={{ once: true }}
-                className="glass-card p-6 text-center group hover:scale-105 transition-transform duration-300"
-              >
-                <div className={`w-16 h-16 mx-auto mb-4 rounded-full bg-${feature.color}/20 flex items-center justify-center group-hover:bg-${feature.color}/30 transition-colors`}>
-                  <feature.icon className={`w-8 h-8 text-${feature.color}`} />
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-400 leading-relaxed">
-                  {feature.description}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
       </section>
 
     </div>

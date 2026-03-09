@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Wine } from 'lucide-react'
-import { Music, Github, Twitter, Heart } from 'lucide-react'
+import { Music, Github, Heart } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 const Footer = () => {
   const currentYear = new Date().getFullYear()
@@ -8,13 +9,8 @@ const Footer = () => {
   const socialLinks = [
     {
       name: 'GitHub',
-      href: 'https://github.com/yourusername/sonic-mixologist',
+      href: 'https://github.com/namanagg17/sonic-mixologist',
       icon: Github,
-    },
-    {
-      name: 'Twitter',
-      href: 'https://twitter.com/yourusername',
-      icon: Twitter,
     },
   ]
 
@@ -48,19 +44,14 @@ const Footer = () => {
             </h3>
             <ul className="space-y-2">
               <li>
-                <a href="#about" className="text-sm text-gray-400 hover:text-cocktail-gold transition-colors">
+                <Link to="/about" className="text-sm text-gray-400 hover:text-cocktail-gold transition-colors">
                   About
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#how-it-works" className="text-sm text-gray-400 hover:text-cocktail-gold transition-colors">
+                <Link to="/how-it-works" className="text-sm text-gray-400 hover:text-cocktail-gold transition-colors">
                   How It Works
-                </a>
-              </li>
-              <li>
-                <a href="#privacy" className="text-sm text-gray-400 hover:text-cocktail-gold transition-colors">
-                  Privacy Policy
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -94,7 +85,7 @@ const Footer = () => {
                 <span>Powered by</span>
                 <span className="text-cocktail-gold">Web Audio API</span>
                 <span>&</span>
-                <span className="text-cocktail-gold">FFT Analysis</span>
+                <span className="text-cocktail-gold">YAMNet + TensorFlow.js</span>
               </p>
             </div>
           </div>
@@ -107,13 +98,7 @@ const Footer = () => {
               This application is for educational and entertainment purposes only.
             </p>
             <div className="flex items-center space-x-4 text-xs text-gray-500">
-              <a href="#terms" className="hover:text-cocktail-gold transition-colors">
-                Terms of Service
-              </a>
-              <span>•</span>
-              <a href="#privacy" className="hover:text-cocktail-gold transition-colors">
-                Privacy Policy
-              </a>
+              <span>For educational and entertainment purposes only</span>
             </div>
           </div>
         </div>

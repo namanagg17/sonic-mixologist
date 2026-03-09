@@ -104,32 +104,6 @@ const Results = () => {
                   </div>
                 </div>
               )}
-
-              {detectedMood.scores && (
-                <div className="space-y-2">
-                  <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">All mood scores</p>
-                  {Object.entries(detectedMood.scores)
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([mood, score]) => (
-                      <div key={mood}>
-                        <div className="flex justify-between text-xs mb-0.5">
-                          <span className="text-gray-300 capitalize">{mood}</span>
-                          <span className="text-gray-400">{(score * 100).toFixed(1)}%</span>
-                        </div>
-                        <div className="w-full bg-white/10 rounded-full h-1.5">
-                          <div
-                            className={`h-1.5 rounded-full transition-all ${
-                              mood === detectedMood.mood
-                                ? 'bg-cocktail-gold'
-                                : 'bg-white/30'
-                            }`}
-                            style={{ width: `${Math.min(score * 100, 100)}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              )}
             </div>
 
             {explanation && explanation.length > 0 && (
