@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { Music, Sparkles, Wine} from 'lucide-react'
 import LoadingSpinner from '../components/LoadingSpinner'
 import AudioRecorder from "../components/AudioRecorder";
+import SplineScene from '../components/SplineScene'
 import { fft } from "fft-js";
 import { util as fftUtil } from "fft-js";
 import { cocktails as drinks } from "../data/cocktailDataset";
@@ -55,6 +56,16 @@ const Home = () => {
                 <span className="text-sm font-medium">AI-Powered Audio Analysis</span>
               </div>
             </div>
+          </motion.div>
+
+          {/* 3D Spline Scene – bartender pouring cocktail with musical notes */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.8 }}
+            className="mb-12"
+          >
+            <SplineScene />
           </motion.div>
 
           {/* Audio Recording Section */}
