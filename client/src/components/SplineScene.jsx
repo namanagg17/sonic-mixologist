@@ -44,8 +44,8 @@ const SplineScene = ({
     setIsLoaded(true)
     // Store reference if you need programmatic control later
     // e.g. splineApp.emitEvent('mouseHover', 'object-name')
-    if (splineApp) {
-      splineApp.setZoom && splineApp.setZoom(0.8)
+    if (splineApp && typeof splineApp.setZoom === 'function') {
+      splineApp.setZoom(0.8)
     }
   }, [])
 
